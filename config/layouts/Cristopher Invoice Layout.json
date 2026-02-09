@@ -1,0 +1,60 @@
+{
+  "name": "Cristopher Invoice Layout",
+  "columns": [
+    {
+      "fieldPath": "invoiceDate",
+      "title": "Date",
+      "blank": false
+    },
+    {
+      "fieldPath": "id",
+      "title": "InvoiceNbr",
+      "blank": false
+    },
+    {
+      "fieldPath": "invoiceSections.billables.lineItems.productId",
+      "title": "ProductId",
+      "blank": false
+    },
+    {
+      "fieldPath": "invoiceSections.billables.lineItems.productName",
+      "title": "ProductName",
+      "blank": false
+    },
+    {
+      "fieldPath": "invoiceSections.billables.lineItems.quantity",
+      "title": "Quantity",
+      "blank": false
+    },
+    {
+      "fieldPath": "invoiceSections.billables.lineItems.unitPrice",
+      "title": "UnitPrice",
+      "blank": false
+    },
+    {
+      "fieldPath": "invoiceSections.billables.lineItems.extendedPrice",
+      "title": "ExtendedPrice",
+      "blank": false
+    },
+    {
+      "title": "Test",
+      "blank": true
+    },
+    {
+      "fieldPath": "invoiceSections.billables.lineItems.salesTax",
+      "title": "invoiceSections.billables.lineItems.salesTax",
+      "blank": false
+    },
+    {
+      "title": "Company",
+      "blank": true,
+      "customText": "01"
+    },
+    {
+      "fieldPath": "invoiceSections.billables.ticketId",
+      "title": "Ticket",
+      "blank": false
+    }
+  ],
+  "expandArrayPath": "invoiceSections.billables.lineItems"
+}
