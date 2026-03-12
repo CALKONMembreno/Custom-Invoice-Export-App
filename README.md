@@ -55,9 +55,10 @@ Store **Entity Ref**, **API Key**, **Client ID**, **Client Secret**, and **API S
 
 ### Optional: blank rows (empty lines)
 
-Layouts can optionally insert **blank rows** into the export output (CSV/XLSX). This is configured directly in the saved layout JSON file in `config/layouts/*.json`.
+Layouts can optionally insert **blank rows** into the export output (CSV/XLSX). This can be configured in the **Manage layouts** tab (Empty rows / Empty row rules…), and is also stored in the saved layout JSON file in `config/layouts/*.json`.
 
-- **blankRowsBeforeEmptyExpandedRow** – Integer. When **Expand array** is set and an invoice has an empty array at that path, the app still emits one row (parent columns filled, expanded columns empty). Set this to add N blank rows **before** that “empty expanded” row.
+- **blankRowsBeforeEachRow** – Integer. Adds N blank rows **before every exported row**.
+- **blankRowsBeforeEmptyExpandedRow** – Integer (advanced JSON-only option). When **Expand array** is set and an invoice has an empty array at that path, the app still emits one row (parent columns filled, expanded columns empty). Set this to add N extra blank rows **before** that “empty expanded” row.
 - **blankRowsBefore** – List of rules. Each rule can insert blank rows before any output row when the resolved value at a path matches a condition.
 
 Example:
@@ -70,6 +71,7 @@ Example:
       {"fieldPath": "invoiceSections.billables.lineItems.productId", "title": "ProductId", "blank": false}
    ],
    "expandArrayPath": "invoiceSections.billables.lineItems",
+   "blankRowsBeforeEachRow": 1,
    "blankRowsBeforeEmptyExpandedRow": 2,
    "blankRowsBefore": [
       {"path": "invoiceSections.billables.lineItems.productId", "operator": "is_blank", "count": 1}
