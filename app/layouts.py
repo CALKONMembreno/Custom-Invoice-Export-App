@@ -282,13 +282,15 @@ def rows_from_items(
         if isinstance(maybe, list):
             blank_rules = [r for r in maybe if isinstance(r, dict)]
 
-    blank_before_each_row = 0
+    blank_before_first_row = 0
     if isinstance(layout_options, dict):
-        # New key: applies to every exported row (expanded or not)
-        blank_before_each_row = _safe_int(layout_options.get("blankRowsBeforeEachRow"), 0)
-        # Back-compat: older UI/setting used this key; treat as alias for each-row blanks.
-        if not blank_before_each_row:
-            blank_before_each_row = _safe_int(layout_options.get("blankRowsBeforeEveryRow"), 0)
+        # Applies once at the very beginning of the export (after headers).
+        blank_before_first_row = _safe_int(layout_options.get("blankRowsBeforeFirstRow"), 0)
+        # Back-compat: previously we used blankRowsBeforeEachRow in the UI; interpret as first-row prefix.
+        if not blank_before_first_row:
+            blank_before_first_row = _safe_int(layout_options.get("blankRowsBeforeEachRow"), 0)
+        if not blank_before_first_row:
+            blank_before_first_row = _safe_int(layout_options.get("blankRowsBeforeEveryRow"), 0)
 
     blank_before_empty_expanded = 0
     if isinstance(layout_options, dict):
@@ -296,8 +298,6 @@ def rows_from_items(
 
     def blank_rows_to_insert(item: dict, sub_item: dict | None) -> int:
         total = 0
-        if blank_before_each_row:
-            total += blank_before_each_row
         # Convenience: expanded array is empty -> sub_item None
         if expand_array_path and sub_item is None and blank_before_empty_expanded:
             total += blank_before_empty_expanded
@@ -315,6 +315,8 @@ def rows_from_items(
 
     if not expand_array_path:
         rows: list[list[str]] = []
+        for _ in range(_safe_int(blank_before_first_row, 0)):
+            rows.append(blank_row())
         for item in items:
             n_blank = blank_rows_to_insert(item, None)
             for _ in range(n_blank):
@@ -323,6 +325,8 @@ def rows_from_items(
         return rows
 
     rows: list[list[str]] = []
+    for _ in range(_safe_int(blank_before_first_row, 0)):
+        rows.append(blank_row())
     for item in items:
         # Nested path (e.g. invoiceSections.billables.lineItems) → flatten to get each line item
         if "." in expand_array_path:

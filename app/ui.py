@@ -83,7 +83,7 @@ class LayoutsFrame(ctk.CTkFrame):
         super().__init__(master, **kwargs)
         self._columns: list[dict] = []
         self._blank_row_rules: list[dict] = []
-        self._blank_rows_before_each_row: int = 0
+        self._blank_rows_before_first_row: int = 0
         self._build_ui()
 
     def _build_ui(self):
@@ -121,7 +121,7 @@ class LayoutsFrame(ctk.CTkFrame):
         self.blank_before_each_row_entry.insert(0, "0")
         ctk.CTkLabel(
             empty_rows_row,
-            text="Blank rows before each exported row",
+            text="Blank rows before the first exported row",
             font=ctk.CTkFont(size=10),
             text_color="gray",
         ).pack(side="left", padx=(0, 8))
@@ -171,11 +171,13 @@ class LayoutsFrame(ctk.CTkFrame):
         return v
 
     def _set_blank_row_options_from_layout(self, layout_full: dict):
-        n = self._safe_int(layout_full.get("blankRowsBeforeEachRow"), 0)
+        n = self._safe_int(layout_full.get("blankRowsBeforeFirstRow"), 0)
         if not n:
-            # Back-compat: older saved layouts might have used this key.
-            n = self._safe_int(layout_full.get("blankRowsBeforeEmptyExpandedRow"), 0)
-        self._blank_rows_before_each_row = n
+            # Back-compat: older saved layouts used this key.
+            n = self._safe_int(layout_full.get("blankRowsBeforeEachRow"), 0)
+        if not n:
+            n = self._safe_int(layout_full.get("blankRowsBeforeEveryRow"), 0)
+        self._blank_rows_before_first_row = n
         try:
             self.blank_before_each_row_entry.delete(0, "end")
             self.blank_before_each_row_entry.insert(0, str(n))
@@ -186,11 +188,11 @@ class LayoutsFrame(ctk.CTkFrame):
 
     def _get_blank_row_options_for_save(self) -> dict:
         n = self._safe_int(self.blank_before_each_row_entry.get(), 0)
-        self._blank_rows_before_each_row = n
+        self._blank_rows_before_first_row = n
         rules = [dict(r) for r in (self._blank_row_rules or []) if isinstance(r, dict)]
         out: dict = {}
         if n:
-            out["blankRowsBeforeEachRow"] = n
+            out["blankRowsBeforeFirstRow"] = n
         if rules:
             out["blankRowsBefore"] = rules
         return out
