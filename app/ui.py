@@ -82,6 +82,8 @@ class LayoutsFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self._columns: list[dict] = []
+        self._blank_row_rules: list[dict] = []
+        self._blank_rows_before_empty_expanded_row: int = 0
         self._build_ui()
 
     def _build_ui(self):
@@ -109,6 +111,21 @@ class LayoutsFrame(ctk.CTkFrame):
         self.expand_combo = ctk.CTkComboBox(expand_row, values=["(None)"], width=200)
         self.expand_combo.pack(side="left", padx=(0, 8))
         ctk.CTkLabel(expand_row, text="One row per element; invoice fields repeat", font=ctk.CTkFont(size=10), text_color="gray").pack(side="left", padx=(8, 0))
+
+        # Empty rows (blank lines)
+        empty_rows_row = ctk.CTkFrame(self._scroll, fg_color="transparent")
+        empty_rows_row.pack(fill="x", padx=10, pady=(0, 4))
+        ctk.CTkLabel(empty_rows_row, text="Empty rows", width=100).pack(side="left", padx=(0, 8))
+        self.blank_before_empty_expanded_entry = ctk.CTkEntry(empty_rows_row, width=70, placeholder_text="0")
+        self.blank_before_empty_expanded_entry.pack(side="left", padx=(0, 8))
+        self.blank_before_empty_expanded_entry.insert(0, "0")
+        ctk.CTkLabel(
+            empty_rows_row,
+            text="Blank rows before the 'array empty' row (when Expand array is set)",
+            font=ctk.CTkFont(size=10),
+            text_color="gray",
+        ).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(empty_rows_row, text="Empty row rules…", width=140, command=self._open_blank_rows_modal).pack(side="left", padx=(8, 0))
 
         # Layout name + Load/Save (row 1)
         name_row1 = ctk.CTkFrame(self._scroll, fg_color="transparent")
@@ -141,6 +158,159 @@ class LayoutsFrame(ctk.CTkFrame):
         self._refresh_layout_combo()
         self._redraw_columns()
         self._load_last_schema_if_saved()
+
+    def _safe_int(self, s: str, default: int = 0, *, min_value: int = 0, max_value: int = 100) -> int:
+        try:
+            v = int(str(s).strip())
+        except (TypeError, ValueError):
+            return default
+        if v < min_value:
+            return min_value
+        if v > max_value:
+            return max_value
+        return v
+
+    def _set_blank_row_options_from_layout(self, layout_full: dict):
+        n = self._safe_int(layout_full.get("blankRowsBeforeEmptyExpandedRow"), 0)
+        self._blank_rows_before_empty_expanded_row = n
+        try:
+            self.blank_before_empty_expanded_entry.delete(0, "end")
+            self.blank_before_empty_expanded_entry.insert(0, str(n))
+        except Exception:
+            pass
+        rules = layout_full.get("blankRowsBefore")
+        self._blank_row_rules = [dict(r) for r in rules] if isinstance(rules, list) else []
+
+    def _get_blank_row_options_for_save(self) -> dict:
+        n = self._safe_int(self.blank_before_empty_expanded_entry.get(), 0)
+        self._blank_rows_before_empty_expanded_row = n
+        rules = [dict(r) for r in (self._blank_row_rules or []) if isinstance(r, dict)]
+        out: dict = {}
+        if n:
+            out["blankRowsBeforeEmptyExpandedRow"] = n
+        if rules:
+            out["blankRowsBefore"] = rules
+        return out
+
+    def _open_blank_rows_modal(self):
+        """Edit blank-row insertion rules for the layout (adds empty rows before an export row when a condition matches)."""
+        rules: list[dict] = [dict(r) for r in (self._blank_row_rules or [])]
+        if not rules:
+            rules = [{"path": "", "operator": "is_blank", "ifValue": "", "count": 1}]
+
+        CONDITION_OPERATORS = [
+            ("equals", "equal"),
+            ("not_equals", "not equal"),
+            ("contains", "contains"),
+            ("not_contains", "not contains"),
+            ("greater", "greater"),
+            ("greater_or_equal", "greater or equal"),
+            ("less", "less"),
+            ("less_or_equal", "less or equal"),
+            ("is_blank", "is blank"),
+            ("is_not_blank", "is not blank"),
+        ]
+        op_values = [v[0] for v in CONDITION_OPERATORS]
+        op_labels = [v[1] for v in CONDITION_OPERATORS]
+
+        win = ctk.CTkToplevel(self.winfo_toplevel())
+        win.title("Empty row rules")
+        win.geometry("760x360")
+        win.transient(self.winfo_toplevel())
+
+        ctk.CTkLabel(
+            win,
+            text="Insert blank rows before a row when a field matches a rule. For 'is blank' / 'is not blank' the value field is ignored.",
+            font=ctk.CTkFont(size=11),
+            wraplength=720,
+        ).pack(anchor="w", padx=12, pady=(10, 6))
+
+        header = ctk.CTkFrame(win, fg_color="transparent")
+        header.pack(fill="x", padx=12)
+        ctk.CTkLabel(header, text="Field path", width=280).pack(side="left")
+        ctk.CTkLabel(header, text="Operator", width=140).pack(side="left")
+        ctk.CTkLabel(header, text="Value", width=160).pack(side="left")
+        ctk.CTkLabel(header, text="# Rows", width=70).pack(side="left")
+
+        scroll = ctk.CTkScrollableFrame(win, fg_color="transparent", height=200)
+        scroll.pack(fill="both", expand=True, padx=12, pady=6)
+
+        entries_list: list[tuple[ctk.CTkEntry, ctk.CTkComboBox, ctk.CTkEntry, ctk.CTkEntry]] = []
+
+        def redraw_rules():
+            for w in scroll.winfo_children():
+                w.destroy()
+            entries_list.clear()
+            for i, r in enumerate(rules):
+                row = ctk.CTkFrame(scroll, fg_color="transparent")
+                row.pack(fill="x", pady=2)
+
+                path_entry = ctk.CTkEntry(row, width=280, placeholder_text="e.g. invoiceSections.billables.lineItems.productId")
+                path_entry.pack(side="left", padx=(0, 6))
+                path_entry.insert(0, str(r.get("path") or r.get("fieldPath") or ""))
+
+                def on_pick(idx: int):
+                    def chosen(path: str):
+                        if 0 <= idx < len(rules):
+                            rules[idx]["path"] = path
+                        redraw_rules()
+                    self._open_pick_field_popup(chosen)
+
+                ctk.CTkButton(row, text="Pick…", width=50, command=lambda idx=i: on_pick(idx)).pack(side="left", padx=(0, 10))
+
+                op_combo = ctk.CTkComboBox(row, values=op_labels, width=140)
+                op_combo.pack(side="left", padx=(0, 6))
+                stored = str(r.get("operator") or "is_blank")
+                if stored in op_values:
+                    op_combo.set(CONDITION_OPERATORS[op_values.index(stored)][1])
+                else:
+                    op_combo.set("is blank")
+
+                val_entry = ctk.CTkEntry(row, width=160, placeholder_text="(ignored for is blank)")
+                val_entry.pack(side="left", padx=(0, 6))
+                val_entry.insert(0, str(r.get("ifValue", "") or ""))
+
+                count_entry = ctk.CTkEntry(row, width=70, placeholder_text="1")
+                count_entry.pack(side="left", padx=(0, 6))
+                count_entry.insert(0, str(r.get("count", 1) or 1))
+
+                entries_list.append((path_entry, op_combo, val_entry, count_entry))
+                ctk.CTkButton(row, text="Remove", width=70, command=lambda idx=i: _remove_rule(idx)).pack(side="left", padx=(6, 0))
+
+        def _remove_rule(idx: int):
+            if 0 <= idx < len(rules):
+                rules.pop(idx)
+                if not rules:
+                    rules.append({"path": "", "operator": "is_blank", "ifValue": "", "count": 1})
+                redraw_rules()
+
+        def _add_rule():
+            rules.append({"path": "", "operator": "is_blank", "ifValue": "", "count": 1})
+            redraw_rules()
+
+        def _save():
+            new_rules: list[dict] = []
+            for (path_entry, op_combo, val_entry, count_entry) in entries_list:
+                path = (path_entry.get() or "").strip()
+                label = (op_combo.get() or "").strip()
+                try:
+                    op_val = op_values[op_labels.index(label)]
+                except (ValueError, IndexError):
+                    op_val = "is_blank"
+                if_val = (val_entry.get() or "").strip()
+                count = self._safe_int(count_entry.get(), 1, min_value=0, max_value=100)
+                if not path or count <= 0:
+                    continue
+                new_rules.append({"path": path, "operator": op_val, "ifValue": if_val, "count": count})
+            self._blank_row_rules = new_rules
+            win.destroy()
+
+        redraw_rules()
+        btn_row = ctk.CTkFrame(win, fg_color="transparent")
+        btn_row.pack(fill="x", padx=12, pady=10)
+        ctk.CTkButton(btn_row, text="Add rule", width=90, command=_add_rule).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(btn_row, text="OK", width=80, command=_save).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(btn_row, text="Cancel", width=80, fg_color="gray", command=win.destroy).pack(side="left")
 
     def _load_last_schema_if_saved(self):
         """On startup, reload the last imported schema from config/schemas/ if saved."""
@@ -453,6 +623,7 @@ class LayoutsFrame(ctk.CTkFrame):
         full = layouts.load_layout_full(name)
         self._columns = [dict(c) for c in full.get("columns", [])]
         exp = full.get("expandArrayPath") or ""
+        self._set_blank_row_options_from_layout(full)
         self.layout_name_entry.delete(0, "end")
         self.layout_name_entry.insert(0, name)
         expand_values = ["(None)"] + list(dict.fromkeys(self._array_paths + ([exp] if exp else [])))
@@ -468,6 +639,7 @@ class LayoutsFrame(ctk.CTkFrame):
         full = layouts.load_layout_full(name)
         self._columns = [dict(c) for c in full.get("columns", [])]
         exp = full.get("expandArrayPath") or ""
+        self._set_blank_row_options_from_layout(full)
         expand_values = ["(None)"] + list(dict.fromkeys(self._array_paths + ([exp] if exp else [])))
         self.expand_combo.configure(values=expand_values)
         self.expand_combo.set(exp if exp else "(None)")
@@ -484,7 +656,12 @@ class LayoutsFrame(ctk.CTkFrame):
         if not self._columns:
             messagebox.showwarning("Columns", "Add at least one column.")
             return
-        layouts.save_layout(name, self._columns, expand_array_path=self._get_expand_array_path())
+        layouts.save_layout(
+            name,
+            self._columns,
+            expand_array_path=self._get_expand_array_path(),
+            extra=self._get_blank_row_options_for_save(),
+        )
         self._refresh_layout_combo()
         self.layout_combo.set(name)
         messagebox.showinfo("Saved", f"Layout '{name}' saved.")

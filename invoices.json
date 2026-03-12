@@ -1,0 +1,493 @@
+[
+  {
+    "id": "string",
+    "crn": "string",
+    "contacts": [
+      {
+        "email": "dave@emailservice.com",
+        "firstName": "DAVE",
+        "lastName": "ELKINS",
+        "phone": "15551587884",
+        "locale": "en-US"
+      }
+    ],
+    "documentType": "credit",
+    "sourceInvoice": {
+      "invoiceRef": "string",
+      "invoiceId": "string",
+      "invoiceDate": "string"
+    },
+    "status": "ACTIVE",
+    "state": "CREATED",
+    "createDate": "2024-01-01T14:14:14Z",
+    "modifyDate": "2024-01-01T14:14:14Z",
+    "invoiceDate": "string",
+    "profileRef": "string",
+    "profile": {
+      "firstName": "string",
+      "lastName": "string"
+    },
+    "schemaVersion": 0,
+    "invoiceSections": [
+      {
+        "id": "string",
+        "orderId": "string",
+        "date": "string",
+        "projectName": "string",
+        "customerName": "string",
+        "destination": "string",
+        "soldTo": {
+          "name": "string",
+          "address": {
+            "address1": "string",
+            "countrySubDivision": "string",
+            "postalCode": "string",
+            "city": "string"
+          },
+          "onBehalfOf": {
+            "name": "string",
+            "address": {
+              "address1": "string",
+              "countrySubDivision": "string",
+              "postalCode": "string",
+              "city": "string"
+            }
+          }
+        },
+        "billables": [
+          {
+            "status": "ACTIVE",
+            "alerts": [
+              {
+                "contact": {
+                  "phoneNumber": "123-456-7890",
+                  "commitmentAmmount": 1000,
+                  "commitmentDate": "2024-01-01T00:00:00Z"
+                },
+                "endDate": "2024-01-01T00:00:00Z",
+                "message": "This is a message",
+                "startDate": "2024-01-01T00:00:00Z"
+              }
+            ],
+            "customerId": "string",
+            "customerName": "string",
+            "customerRef": "string",
+            "creditCodeRef": "string",
+            "creditCodeId": "string",
+            "legalEntityRef": "string",
+            "legalEntityName": "string",
+            "preferredInvoiceTemplateRef": "string",
+            "paymentGatewaySettingsRef": "string",
+            "paymentGatewaySettingsName": "string",
+            "customerJob": "string",
+            "destinationAddress": {
+              "address1": "string",
+              "address2": "string",
+              "address3": "string",
+              "city": "string",
+              "countrySubDivision": "string",
+              "countryCode": "string",
+              "postalCode": "string",
+              "coordinates": {
+                "longitude": 0,
+                "latitude": 0,
+                "additionalProp": {}
+              },
+              "additionalProp": {}
+            },
+            "destination": "string",
+            "dispatchDateTime": "string",
+            "locationId": "string",
+            "locationName": "string",
+            "locationRef": "string",
+            "dispatchLocationRef": "string",
+            "dispatchLocationId": "string",
+            "dispatchLocationName": "string",
+            "orderId": "string",
+            "orderRef": "string",
+            "orderGroupRef": "string",
+            "orderGroupId": "string",
+            "orderDate": "string",
+            "orderCustomerName": "string",
+            "orderCustomerRef": "string",
+            "orderProjectName": "string",
+            "orderProjectRef": "string",
+            "orderLocationName": "string",
+            "orderLocationRef": "string",
+            "orderPaymentMethodName": "string",
+            "orderPaymentMethodRef": "string",
+            "orderShippingMethodRef": "string",
+            "orderShippingMethodId": "string",
+            "orderShippingMethodName": "string",
+            "orderRequestedBy": "string",
+            "orderPurchaseOrder": "string",
+            "orderSalesPersonName": "string",
+            "orderSalesPersonRef": "string",
+            "productId": "string",
+            "productName": "string",
+            "projectId": "string",
+            "projectName": "string",
+            "projectRef": "string",
+            "statusCode": "string",
+            "taxRateId": "string",
+            "taxRateName": "string",
+            "taxExemptReasonRef": "string",
+            "taxExemptReasonName": "string",
+            "taxExemptReasonId": "string",
+            "ticketId": "string",
+            "ticketRef": "string",
+            "driverRef": "string",
+            "driverId": "string",
+            "driverFirstName": "string",
+            "driverLastName": "string",
+            "driverFullName": "string",
+            "vehicleRef": "string",
+            "vehicleId": "string",
+            "vehicleName": "string",
+            "vehicleTypeId": "string",
+            "vehicleTypeName": "string",
+            "systemVehicleType": "string",
+            "vehicleTypeRef": "string",
+            "purchaseOrder": "string",
+            "blockLot": "string",
+            "phaseName": "string",
+            "phaseRef": "string",
+            "paymentTermsRef": "string",
+            "paymentTermsName": "string",
+            "paymentMethodRef": "string",
+            "paymentMethodName": "string",
+            "notes": [
+              {
+                "crn": "string",
+                "profileRef": "string",
+                "source": "ticket",
+                "message": "string",
+                "timestamp": "string"
+              }
+            ],
+            "isVoided": true,
+            "isTaxValid": true,
+            "isTaxed": true,
+            "hasUntaxed": true,
+            "hasNonTaxable": true,
+            "totalQuantity": 0,
+            "isDelivered": true,
+            "orderedQuantity": 0,
+            "orderedUomCode": "string",
+            "lineItems": [
+              {
+                "stateTaxRate": 0,
+                "countyTaxRate": 0,
+                "cityTaxRate": 0,
+                "districtTaxRate": 0,
+                "salesTaxRate": 0,
+                "totalTaxRate": 0,
+                "cityTax": 0,
+                "countyTax": 0,
+                "districtTax": 0,
+                "extendedPrice": 0,
+                "manualPrice": true,
+                "isMinLoad": true,
+                "minimumLoadCharge": true,
+                "isPrimary": true,
+                "quantityImmutable": true,
+                "isTaxable": true,
+                "taxable": "YES",
+                "taxExemptions": [
+                  "pst",
+                  "gst"
+                ],
+                "salesTax": 0,
+                "priceSource": "Company",
+                "productId": "string",
+                "productName": "string",
+                "productRef": "string",
+                "productTypeId": "string",
+                "productTypeName": "string",
+                "productTypeRef": "string",
+                "systemProductType": "string",
+                "stateApprovalNumber": "123456",
+                "quantity": 0,
+                "lineItemRef": "string",
+                "totalTax": 0,
+                "stateTax": 0,
+                "totalPrice": 0,
+                "unitPrice": 0,
+                "uomCode": "MTQ",
+                "manualTax": true,
+                "taxCode": {
+                  "status": "ACTIVE",
+                  "name": "string",
+                  "id": "string",
+                  "taxJurisdiction": "string",
+                  "salesTaxRate": 0,
+                  "taxExempt": true,
+                  "country": "string",
+                  "state": "string",
+                  "county": "string",
+                  "city": "string",
+                  "district": "string",
+                  "isSubjectToMaxTax": true,
+                  "effectiveDate": "2024-04-01T00:00:00Z",
+                  "reasonCodeRef": "string",
+                  "maxTaxableAmount": 0,
+                  "crn": "string"
+                },
+                "jurisdiction": {
+                  "county": "string",
+                  "city": "string",
+                  "state": "string",
+                  "zip": "string",
+                  "country": "string"
+                },
+                "ruleRef": "string",
+                "priceSummary": {
+                  "taxValues": [
+                    {
+                      "name": "string",
+                      "value": 0
+                    }
+                  ]
+                },
+                "unitPriceWithFreight": 0,
+                "totalPriceWithFreight": 0,
+                "extendedPriceWithFreight": 0,
+                "taxesWithFreight": [
+                  {
+                    "name": "string",
+                    "value": 0
+                  }
+                ]
+              }
+            ],
+            "scheduledEvents": {
+              "ARRIVE_JOB": "2024-10-12T00:09:00.000Z",
+              "END_UNLOADING": "2024-10-12T00:34:00.000Z",
+              "IN_YARD": "2024-10-12T01:21:00.000Z",
+              "LEAVE_JOB": "2024-10-12T00:53:00.000Z",
+              "LOADING_STARTED": "2024-10-11T23:33:00.000Z",
+              "PRINTED": "2024-10-11T23:29:00.000Z",
+              "TO_JOB": "2024-10-11T23:41:00.000Z",
+              "UNLOADING": "2024-10-12T00:19:00.000Z"
+            },
+            "isCOD": true,
+            "isPrevailingWage": true,
+            "sourceBillableRef": "string",
+            "documentType": "credit",
+            "manuallyCreated": true,
+            "salesPersonName": "string",
+            "salesPersonProfileRef": "string",
+            "salesTeamRef": "string",
+            "salesTeamName": "string",
+            "orderSalesType": "string",
+            "pricingTierRef": "string",
+            "pricingTierName": "string",
+            "altBillingAddress": {
+              "address1": "string",
+              "city": "string",
+              "countrySubDivision": "string",
+              "countryCode": "string",
+              "postalCode": "string",
+              "coordinates": {
+                "longitude": 0,
+                "latitude": 0,
+                "additionalProp": {}
+              },
+              "additionalProp": {}
+            },
+            "isProductSale": true,
+            "isOnHold": true,
+            "isOnHoldType": "System",
+            "isPriced": true,
+            "isBillable": true,
+            "exceptions": [
+              "System"
+            ],
+            "taxExemptions": {
+              "additionalProp": {}
+            },
+            "priceSummary": {
+              "taxValues": [
+                {
+                  "name": "string",
+                  "value": 0
+                }
+              ],
+              "taxRates": [
+                {
+                  "name": "string",
+                  "sales": 0,
+                  "use": 0
+                }
+              ]
+            },
+            "freight": {
+              "freightRef": "string",
+              "freightName": "string",
+              "freightId": "string",
+              "includeInUnitPrice": true,
+              "chargeQuantity": 0,
+              "chargeUOM": "string",
+              "payQuantity": 0,
+              "payUOM": "string",
+              "taxCode": {
+                "status": "ACTIVE",
+                "name": "string",
+                "id": "string",
+                "taxJurisdiction": "string",
+                "salesTaxRate": 0,
+                "taxExempt": true,
+                "country": "string",
+                "state": "string",
+                "county": "string",
+                "city": "string",
+                "district": "string",
+                "isSubjectToMaxTax": true,
+                "effectiveDate": "2024-04-01T00:00:00Z",
+                "reasonCodeRef": "string",
+                "maxTaxableAmount": 0,
+                "crn": "string"
+              },
+              "priceSummary": {
+                "chargeRate": 0,
+                "chargeRateType": "string",
+                "payRate": 0,
+                "payRateType": "string",
+                "totalPay": 0,
+                "countyTax": 0,
+                "cityTax": 0,
+                "districtTax": 0,
+                "salesTax": 0,
+                "stateTax": 0,
+                "extendedCharge": 0,
+                "totalCharge": 0,
+                "priceSource": "string",
+                "isTaxable": true,
+                "isManualPay": true,
+                "taxValues": [
+                  {
+                    "name": "string",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "stateSource": "COMMAND_BATCH",
+            "lastStateChangeDateTime": "2024-04-01T00:00:00Z",
+            "carrierPartyRef": "string",
+            "carrierPartyId": "string",
+            "carrierPartyCompanyFleet": true,
+            "carrierPartyName": "string",
+            "shippingMethodRef": "string",
+            "shippingMethodId": "string",
+            "shippingMethodName": "string",
+            "workTypeName": "string",
+            "customerSalesAttributes": [
+              {
+                "salesTeamRef": "string",
+                "role": "string",
+                "tier": "string",
+                "rating": 0,
+                "priority": 0,
+                "salesRepRef": "string"
+              }
+            ],
+            "orderShipReceive": "string",
+            "cancelReason": {
+              "crn": "string",
+              "id": "11",
+              "name": "string"
+            },
+            "sourceInvoice": {
+              "crn": "string",
+              "id": "11"
+            },
+            "isSplit": true
+          }
+        ],
+        "additionalProp": {}
+      }
+    ],
+    "pdf": {
+      "bucket": "string",
+      "signedLink": "string",
+      "outputKey": "string",
+      "templateRef": "string"
+    },
+    "totals": {
+      "subtotalPrice": 0,
+      "salesTax": 0,
+      "cityTax": 0,
+      "countyTax": 0,
+      "stateTax": 0,
+      "districtTax": 0,
+      "totalTax": 0,
+      "totalPrice": 0,
+      "taxSummary": [
+        {
+          "name": "state",
+          "value": 0
+        }
+      ]
+    },
+    "lastProcessDateTime": "string",
+    "creditHistory": [
+      {
+        "creditInvoiceRef": "string",
+        "date": "string",
+        "billableRefs": [
+          "string"
+        ],
+        "changedByProfileRef": "string"
+      }
+    ],
+    "isEmailSent": true,
+    "lastEmailErrorMessages": [
+      {
+        "recipient": "string",
+        "errorMessage": "string"
+      }
+    ],
+    "paymentMethodName": "string",
+    "paymentMethodRef": "string",
+    "notes": [
+      {
+        "crn": "string",
+        "createDate": "string",
+        "profileRef": "string",
+        "invoiceRef": "string",
+        "message": "string"
+      }
+    ],
+    "legalEntityRef": "string",
+    "legalEntityName": "string",
+    "paymentTerms": {
+      "crn": "11111111-1111-1111-1111-111111111111",
+      "id": "124",
+      "name": "CONFIRMED",
+      "status": "ACTIVE",
+      "type": "DUE DAYS",
+      "basedOn": {
+        "dueDays": 0,
+        "discountDays": 0,
+        "discountRate": 0
+      }
+    },
+    "invoiceDueDate": "string",
+    "invoiceDiscountDate": "string",
+    "changeableData": {
+      "legalEntityRef": "string",
+      "legalEntityName": "string",
+      "paymentGatewaySettingsRef": "string",
+      "arStatus": "OPEN",
+      "closedDate": "2024-04-22T00:00:00Z",
+      "amountDue": 0,
+      "paymentsApplied": 0,
+      "adjustmentsApplied": 0,
+      "paymentLinkRef": "string",
+      "paymentLinkUrl": "string"
+    },
+    "isImported": true,
+    "externalId": "string"
+  }
+]
