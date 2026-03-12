@@ -282,12 +282,22 @@ def rows_from_items(
         if isinstance(maybe, list):
             blank_rules = [r for r in maybe if isinstance(r, dict)]
 
+    blank_before_each_row = 0
+    if isinstance(layout_options, dict):
+        # New key: applies to every exported row (expanded or not)
+        blank_before_each_row = _safe_int(layout_options.get("blankRowsBeforeEachRow"), 0)
+        # Back-compat: older UI/setting used this key; treat as alias for each-row blanks.
+        if not blank_before_each_row:
+            blank_before_each_row = _safe_int(layout_options.get("blankRowsBeforeEveryRow"), 0)
+
     blank_before_empty_expanded = 0
     if isinstance(layout_options, dict):
         blank_before_empty_expanded = _safe_int(layout_options.get("blankRowsBeforeEmptyExpandedRow"), 0)
 
     def blank_rows_to_insert(item: dict, sub_item: dict | None) -> int:
         total = 0
+        if blank_before_each_row:
+            total += blank_before_each_row
         # Convenience: expanded array is empty -> sub_item None
         if expand_array_path and sub_item is None and blank_before_empty_expanded:
             total += blank_before_empty_expanded

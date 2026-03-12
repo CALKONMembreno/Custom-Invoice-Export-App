@@ -83,7 +83,7 @@ class LayoutsFrame(ctk.CTkFrame):
         super().__init__(master, **kwargs)
         self._columns: list[dict] = []
         self._blank_row_rules: list[dict] = []
-        self._blank_rows_before_empty_expanded_row: int = 0
+        self._blank_rows_before_each_row: int = 0
         self._build_ui()
 
     def _build_ui(self):
@@ -116,12 +116,12 @@ class LayoutsFrame(ctk.CTkFrame):
         empty_rows_row = ctk.CTkFrame(self._scroll, fg_color="transparent")
         empty_rows_row.pack(fill="x", padx=10, pady=(0, 4))
         ctk.CTkLabel(empty_rows_row, text="Empty rows", width=100).pack(side="left", padx=(0, 8))
-        self.blank_before_empty_expanded_entry = ctk.CTkEntry(empty_rows_row, width=70, placeholder_text="0")
-        self.blank_before_empty_expanded_entry.pack(side="left", padx=(0, 8))
-        self.blank_before_empty_expanded_entry.insert(0, "0")
+        self.blank_before_each_row_entry = ctk.CTkEntry(empty_rows_row, width=70, placeholder_text="0")
+        self.blank_before_each_row_entry.pack(side="left", padx=(0, 8))
+        self.blank_before_each_row_entry.insert(0, "0")
         ctk.CTkLabel(
             empty_rows_row,
-            text="Blank rows before the 'array empty' row (when Expand array is set)",
+            text="Blank rows before each exported row",
             font=ctk.CTkFont(size=10),
             text_color="gray",
         ).pack(side="left", padx=(0, 8))
@@ -171,23 +171,26 @@ class LayoutsFrame(ctk.CTkFrame):
         return v
 
     def _set_blank_row_options_from_layout(self, layout_full: dict):
-        n = self._safe_int(layout_full.get("blankRowsBeforeEmptyExpandedRow"), 0)
-        self._blank_rows_before_empty_expanded_row = n
+        n = self._safe_int(layout_full.get("blankRowsBeforeEachRow"), 0)
+        if not n:
+            # Back-compat: older saved layouts might have used this key.
+            n = self._safe_int(layout_full.get("blankRowsBeforeEmptyExpandedRow"), 0)
+        self._blank_rows_before_each_row = n
         try:
-            self.blank_before_empty_expanded_entry.delete(0, "end")
-            self.blank_before_empty_expanded_entry.insert(0, str(n))
+            self.blank_before_each_row_entry.delete(0, "end")
+            self.blank_before_each_row_entry.insert(0, str(n))
         except Exception:
             pass
         rules = layout_full.get("blankRowsBefore")
         self._blank_row_rules = [dict(r) for r in rules] if isinstance(rules, list) else []
 
     def _get_blank_row_options_for_save(self) -> dict:
-        n = self._safe_int(self.blank_before_empty_expanded_entry.get(), 0)
-        self._blank_rows_before_empty_expanded_row = n
+        n = self._safe_int(self.blank_before_each_row_entry.get(), 0)
+        self._blank_rows_before_each_row = n
         rules = [dict(r) for r in (self._blank_row_rules or []) if isinstance(r, dict)]
         out: dict = {}
         if n:
-            out["blankRowsBeforeEmptyExpandedRow"] = n
+            out["blankRowsBeforeEachRow"] = n
         if rules:
             out["blankRowsBefore"] = rules
         return out
