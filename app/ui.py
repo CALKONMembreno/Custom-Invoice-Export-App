@@ -2,7 +2,10 @@
 UI: Config credentials, Manage layouts, Query & Export (CSV/XLSX).
 """
 import json
-from tkinter import filedialog, messagebox, simpledialog
+import sys
+from datetime import datetime
+from calendar import monthrange
+from tkinter import Menu, filedialog, messagebox, simpledialog
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -82,47 +85,56 @@ class LayoutsFrame(ctk.CTkFrame):
         self._build_ui()
 
     def _build_ui(self):
-        ctk.CTkLabel(self, text="Manage layouts", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
-        ctk.CTkLabel(self, text="Add columns by field path (e.g. paymentTerms.id) and optional custom title. Add blank columns as needed.", font=ctk.CTkFont(size=11)).pack(anchor="w", padx=10, pady=(0, 8))
+        # Scrollable container so all fields fit on small screens
+        self._scroll = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        self._scroll.pack(fill="both", expand=True)
+
+        ctk.CTkLabel(self._scroll, text="Manage layouts", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
+        ctk.CTkLabel(self._scroll, text="Add columns by field path (e.g. paymentTerms.id) and optional custom title. Add blank columns as needed.", font=ctk.CTkFont(size=11)).pack(anchor="w", padx=10, pady=(0, 8))
 
         # Schema import
-        schema_row = ctk.CTkFrame(self, fg_color="transparent")
+        schema_row = ctk.CTkFrame(self._scroll, fg_color="transparent")
         schema_row.pack(fill="x", padx=10, pady=4)
         ctk.CTkButton(schema_row, text="Import schema (JSON)", command=self._import_schema, width=160).pack(side="left", padx=(0, 8))
         self.schema_path_label = ctk.CTkLabel(schema_row, text="No schema loaded", text_color="gray")
         self.schema_path_label.pack(side="left")
-        self._field_paths: list[str] = []
-        self._array_paths: list[str] = []
-        self._last_imported_schema_name: Optional[str] = None
+        self._field_paths = []
+        self._array_paths = []
+        self._last_imported_schema_name = None
 
-        # Expand array (optional): one row per array element, parent fields repeated
-        expand_row = ctk.CTkFrame(self, fg_color="transparent")
+        # Expand array
+        expand_row = ctk.CTkFrame(self._scroll, fg_color="transparent")
         expand_row.pack(fill="x", padx=10, pady=4)
         ctk.CTkLabel(expand_row, text="Expand array", width=100).pack(side="left", padx=(0, 8))
         self.expand_combo = ctk.CTkComboBox(expand_row, values=["(None)"], width=200)
         self.expand_combo.pack(side="left", padx=(0, 8))
         ctk.CTkLabel(expand_row, text="One row per element; invoice fields repeat", font=ctk.CTkFont(size=10), text_color="gray").pack(side="left", padx=(8, 0))
 
-        # Layout name
-        name_row = ctk.CTkFrame(self, fg_color="transparent")
-        name_row.pack(fill="x", padx=10, pady=4)
-        ctk.CTkLabel(name_row, text="Layout name", width=100).pack(side="left", padx=(0, 8))
-        self.layout_name_entry = ctk.CTkEntry(name_row, placeholder_text="e.g. My Export", width=200)
+        # Layout name + Load/Save (row 1)
+        name_row1 = ctk.CTkFrame(self._scroll, fg_color="transparent")
+        name_row1.pack(fill="x", padx=10, pady=4)
+        ctk.CTkLabel(name_row1, text="Layout name", width=100).pack(side="left", padx=(0, 8))
+        self.layout_name_entry = ctk.CTkEntry(name_row1, placeholder_text="e.g. My Export", width=200)
         self.layout_name_entry.pack(side="left", padx=(0, 8))
-        ctk.CTkButton(name_row, text="Load layout", command=self._load_layout, width=100).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(name_row, text="Save layout", command=self._save_layout, width=100).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(name_row, text="Export layouts", command=self._export_layouts, width=110).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(name_row, text="Import layouts", command=self._import_layouts, width=110).pack(side="left", padx=(0, 8))
-        self.layout_combo = ctk.CTkComboBox(name_row, values=layouts.list_layouts(), width=140, command=self._on_select_layout)
+        ctk.CTkButton(name_row1, text="Load layout", command=self._load_layout, width=100).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(name_row1, text="Save layout", command=self._save_layout, width=100).pack(side="left", padx=(0, 8))
+
+        # Export/Import layouts + dropdown (row 2)
+        name_row2 = ctk.CTkFrame(self._scroll, fg_color="transparent")
+        name_row2.pack(fill="x", padx=10, pady=(0, 4))
+        ctk.CTkLabel(name_row2, text="", width=100).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(name_row2, text="Export layouts", command=self._export_layouts, width=110).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(name_row2, text="Import layouts", command=self._import_layouts, width=110).pack(side="left", padx=(0, 8))
+        self.layout_combo = ctk.CTkComboBox(name_row2, values=layouts.list_layouts(), width=180, command=self._on_select_layout)
         self.layout_combo.pack(side="left", padx=(0, 8))
 
-        # Column list
-        ctk.CTkLabel(self, text="Columns (field path → custom title; blank = empty column)", font=ctk.CTkFont(size=11)).pack(anchor="w", padx=10, pady=(8, 4))
-        list_frame = ctk.CTkScrollableFrame(self, height=200, fg_color=("gray85", "gray20"))
-        list_frame.pack(fill="both", expand=True, padx=10, pady=4)
+        # Column list (expandable)
+        ctk.CTkLabel(self._scroll, text="Columns (field path → custom title; blank = empty column)", font=ctk.CTkFont(size=11)).pack(anchor="w", padx=10, pady=(8, 4))
+        list_frame = ctk.CTkScrollableFrame(self._scroll, height=220, fg_color=("gray85", "gray20"))
+        list_frame.pack(fill="x", padx=10, pady=4)
         self.column_list_frame = list_frame
 
-        btn_row = ctk.CTkFrame(self, fg_color="transparent")
+        btn_row = ctk.CTkFrame(self._scroll, fg_color="transparent")
         btn_row.pack(fill="x", padx=10, pady=8)
         ctk.CTkButton(btn_row, text="Add field column", command=self._add_field_column, width=140).pack(side="left", padx=(0, 8))
         ctk.CTkButton(btn_row, text="Add blank column", command=self._add_blank_column, width=140).pack(side="left", padx=(0, 8))
@@ -281,6 +293,7 @@ class LayoutsFrame(ctk.CTkFrame):
                 def sync_title(idx, entry):
                     self._columns[idx]["title"] = entry.get().strip()
                 title_entry.bind("<KeyRelease>", lambda e, idx=i, ent=title_entry: sync_title(idx, ent))
+                ctk.CTkButton(content, text="Conditions…", width=90, command=lambda idx=i: self._open_conditions_modal(idx)).pack(side="left", padx=(8, 0))
             btn_up = ctk.CTkButton(row, text="▲", width=28, command=lambda idx=i: self._move_column(idx, -1))
             btn_up.pack(side="right", padx=(0, 2))
             if i == 0:
@@ -322,6 +335,104 @@ class LayoutsFrame(ctk.CTkFrame):
         if 0 <= index < len(self._columns):
             self._columns.pop(index)
             self._redraw_columns()
+
+    def _open_conditions_modal(self, column_index: int):
+        """Edit replace rules for a column: operator (equals, contains, greater, is blank, etc.) + value → replace with."""
+        if column_index < 0 or column_index >= len(self._columns):
+            return
+        col = self._columns[column_index]
+        if col.get("blank"):
+            return
+        rules: list[dict] = [dict(r) for r in (col.get("conditions") or [])]
+        if not rules:
+            rules = [{"operator": "equals", "ifValue": "", "replaceWith": ""}]
+        for r in rules:
+            if "operator" not in r:
+                r["operator"] = "equals"
+
+        CONDITION_OPERATORS = [
+            ("equals", "equal"),
+            ("not_equals", "not equal"),
+            ("contains", "contains"),
+            ("not_contains", "not contains"),
+            ("greater", "greater"),
+            ("greater_or_equal", "greater or equal"),
+            ("less", "less"),
+            ("less_or_equal", "less or equal"),
+            ("is_blank", "is blank"),
+            ("is_not_blank", "is not blank"),
+        ]
+        op_values = [v[0] for v in CONDITION_OPERATORS]
+        op_labels = [v[1] for v in CONDITION_OPERATORS]
+
+        win = ctk.CTkToplevel(self.winfo_toplevel())
+        win.title("Column conditions")
+        win.geometry("600x340")
+        win.transient(self.winfo_toplevel())
+
+        ctk.CTkLabel(win, text="If the cell value matches the rule (operator + value), it is replaced. First match wins. For 'is blank' / 'is not blank' the value field is ignored.", font=ctk.CTkFont(size=11), wraplength=560).pack(anchor="w", padx=12, pady=(10, 6))
+        scroll = ctk.CTkScrollableFrame(win, fg_color="transparent", height=180)
+        scroll.pack(fill="x", padx=12, pady=4)
+        entries_list: list[tuple[ctk.CTkComboBox, ctk.CTkEntry, ctk.CTkEntry]] = []
+
+        def redraw_rules():
+            for w in scroll.winfo_children():
+                w.destroy()
+            entries_list.clear()
+            for i, r in enumerate(rules):
+                row = ctk.CTkFrame(scroll, fg_color="transparent")
+                row.pack(fill="x", pady=2)
+                ctk.CTkLabel(row, text="If value", width=52).pack(side="left", padx=(0, 2))
+                op_combo = ctk.CTkComboBox(row, values=op_labels, width=130)
+                op_combo.pack(side="left", padx=(0, 4))
+                stored = str(r.get("operator") or "equals")
+                if stored in op_values:
+                    op_combo.set(CONDITION_OPERATORS[op_values.index(stored)][1])
+                else:
+                    op_combo.set("equal")
+                ctk.CTkLabel(row, text="", width=8).pack(side="left")
+                e1 = ctk.CTkEntry(row, width=100, placeholder_text="value (ignored for is blank/not blank)")
+                e1.pack(side="left", padx=(0, 6))
+                e1.insert(0, str(r.get("ifValue", "") or ""))
+                ctk.CTkLabel(row, text="replace with", width=85).pack(side="left", padx=(0, 4))
+                e2 = ctk.CTkEntry(row, width=100, placeholder_text="replacement")
+                e2.pack(side="left", padx=(0, 6))
+                e2.insert(0, str(r.get("replaceWith", "") or ""))
+                entries_list.append((op_combo, e1, e2))
+                ctk.CTkButton(row, text="Remove", width=70, command=lambda idx=i: _remove_rule(idx)).pack(side="left", padx=(4, 0))
+
+        def _remove_rule(idx: int):
+            if 0 <= idx < len(rules):
+                rules.pop(idx)
+                redraw_rules()
+
+        def _add_rule():
+            rules.append({"operator": "equals", "ifValue": "", "replaceWith": ""})
+            redraw_rules()
+
+        def _save():
+            for i, (op_combo, e1, e2) in enumerate(entries_list):
+                if i < len(rules):
+                    label = (op_combo.get() or "").strip()
+                    try:
+                        op_val = op_values[op_labels.index(label)]
+                    except (ValueError, IndexError):
+                        op_val = "equals"
+                    rules[i] = {"operator": op_val, "ifValue": e1.get().strip(), "replaceWith": e2.get().strip()}
+            def keep(r):
+                if (r.get("operator") or "").strip() in ("is_blank", "is_not_blank"):
+                    return bool(str(r.get("replaceWith") or "").strip())
+                return bool(str(r.get("ifValue") or "").strip() or str(r.get("replaceWith") or "").strip())
+            self._columns[column_index]["conditions"] = [r for r in rules if keep(r)]
+            win.destroy()
+            self._redraw_columns()
+
+        redraw_rules()
+        btn_row = ctk.CTkFrame(win, fg_color="transparent")
+        btn_row.pack(fill="x", padx=12, pady=10)
+        ctk.CTkButton(btn_row, text="Add rule", width=90, command=_add_rule).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(btn_row, text="OK", width=80, command=_save).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(btn_row, text="Cancel", width=80, fg_color="gray", command=win.destroy).pack(side="left")
 
     def _refresh_expand_combo(self):
         values = ["(None)"] + self._array_paths
@@ -439,12 +550,40 @@ class ExportFrame(ctk.CTkFrame):
     def _build_ui(self):
         ctk.CTkLabel(self, text="Query & export invoices", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
 
-        row1 = ctk.CTkFrame(self, fg_color="transparent")
-        row1.pack(fill="x", padx=10, pady=4)
-        ctk.CTkLabel(row1, text="Date range", width=100).pack(side="left", padx=(0, 8))
-        self.date_combo = ctk.CTkComboBox(row1, values=DATE_OPTIONS, width=180)
+        # Date filter: either date option or custom range (mutually exclusive)
+        date_section = ctk.CTkFrame(self, fg_color="transparent")
+        date_section.pack(fill="x", padx=10, pady=4)
+
+        date_mode_row = ctk.CTkFrame(date_section, fg_color="transparent")
+        date_mode_row.pack(fill="x")
+        ctk.CTkLabel(date_mode_row, text="Date filter", width=100).pack(side="left", padx=(0, 8))
+        self.date_mode = ctk.CTkSegmentedButton(
+            date_mode_row,
+            values=["Date option", "Date range"],
+            command=self._on_date_mode_change,
+        )
+        self.date_mode.pack(side="left", padx=(0, 8))
+        self.date_mode.set("Date option")
+
+        self.option_row = ctk.CTkFrame(date_section, fg_color="transparent")
+        self.option_row.pack(fill="x", pady=(4, 0))
+        ctk.CTkLabel(self.option_row, text="", width=100).pack(side="left", padx=(0, 8))
+        self.date_combo = ctk.CTkComboBox(self.option_row, values=DATE_OPTIONS, width=180)
         self.date_combo.set("Yesterday")
         self.date_combo.pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(self.option_row, text="(e.g. Yesterday, Last_7_Days)", font=ctk.CTkFont(size=10), text_color="gray").pack(side="left", padx=(8, 0))
+
+        self.range_row = ctk.CTkFrame(date_section, fg_color="transparent")
+        ctk.CTkLabel(self.range_row, text="", width=100).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(self.range_row, text="Start (ISO-8601)", width=110).pack(side="left", padx=(0, 4))
+        self.start_date_entry = ctk.CTkEntry(self.range_row, width=200, placeholder_text="2024-01-01T00:00:00Z")
+        self.start_date_entry.pack(side="left", padx=(0, 4))
+        ctk.CTkButton(self.range_row, text="Pick date", width=80, command=lambda: self._pick_date("start")).pack(side="left", padx=(0, 12))
+        ctk.CTkLabel(self.range_row, text="End (ISO-8601)", width=100).pack(side="left", padx=(0, 4))
+        self.end_date_entry = ctk.CTkEntry(self.range_row, width=200, placeholder_text="2024-01-31T23:59:59Z")
+        self.end_date_entry.pack(side="left", padx=(0, 4))
+        ctk.CTkButton(self.range_row, text="Pick date", width=80, command=lambda: self._pick_date("end")).pack(side="left", padx=(0, 8))
+        self.range_row.pack_forget()  # hidden by default (Date option shown)
 
         row2 = ctk.CTkFrame(self, fg_color="transparent")
         row2.pack(fill="x", padx=10, pady=4)
@@ -461,6 +600,95 @@ class ExportFrame(ctk.CTkFrame):
         btn_row.pack(fill="x", padx=10, pady=8)
         ctk.CTkButton(btn_row, text="Export to CSV", command=lambda: self._run_export("csv"), width=140).pack(side="left", padx=(0, 8))
         ctk.CTkButton(btn_row, text="Export to XLSX", command=lambda: self._run_export("xlsx"), width=140).pack(side="left", padx=(0, 8))
+
+    def _on_date_mode_change(self, value: str):
+        if value == "Date option":
+            self.range_row.pack_forget()
+            self.option_row.pack(fill="x", pady=(4, 0))
+        else:
+            self.option_row.pack_forget()
+            self.range_row.pack(fill="x", pady=(4, 0))
+            self._set_default_date_range()
+
+    def _set_default_date_range(self):
+        """Set Start to first day of current month 00:00, End to last day 23:59:59 if entries are empty."""
+        from calendar import monthrange
+        now = datetime.utcnow()
+        y, m = now.year, now.month
+        _, last = monthrange(y, m)
+        start_default = f"{y}-{m:02d}-01T00:00:00Z"
+        end_default = f"{y}-{m:02d}-{last:02d}T23:59:59Z"
+        if not self.start_date_entry.get().strip():
+            self.start_date_entry.delete(0, "end")
+            self.start_date_entry.insert(0, start_default)
+        if not self.end_date_entry.get().strip():
+            self.end_date_entry.delete(0, "end")
+            self.end_date_entry.insert(0, end_default)
+
+    def _pick_date(self, which: str):
+        """Open date picker (year/month/day dropdowns); set Start to 00:00:00Z or End to 23:59:59Z."""
+        entry = self.start_date_entry if which == "start" else self.end_date_entry
+        time_suffix = "T00:00:00Z" if which == "start" else "T23:59:59Z"
+        current = entry.get().strip()
+        try:
+            if current and "T" in current:
+                date_part = current.split("T")[0]
+                initial = datetime.strptime(date_part, "%Y-%m-%d")
+            else:
+                initial = datetime.utcnow()
+        except Exception:
+            initial = datetime.utcnow()
+
+        result = [None]
+
+        def on_ok():
+            try:
+                y = int(year_combo.get())
+                m = int(month_combo.get())
+                d = int(day_combo.get())
+                _, last = monthrange(y, m)
+                d = min(d, last)
+                result[0] = f"{y:04d}-{m:02d}-{d:02d}"
+            except (ValueError, TypeError):
+                pass
+            win.destroy()
+
+        win = ctk.CTkToplevel(self.winfo_toplevel())
+        win.title("Start date" if which == "start" else "End date")
+        win.geometry("260x120")
+        win.minsize(240, 100)
+        win.transient(self.winfo_toplevel())
+        win.grab_set()
+
+        row = ctk.CTkFrame(win, fg_color="transparent")
+        row.pack(fill="x", padx=10, pady=8)
+        ctk.CTkLabel(row, text="Year", width=28).pack(side="left", padx=(0, 2))
+        years = [str(initial.year + i) for i in range(-5, 11)]
+        year_combo = ctk.CTkComboBox(row, values=years, width=58)
+        year_combo.set(str(initial.year))
+        year_combo.pack(side="left", padx=(0, 6))
+        ctk.CTkLabel(row, text="Month", width=36).pack(side="left", padx=(0, 2))
+        months = [f"{i:02d}" for i in range(1, 13)]
+        month_combo = ctk.CTkComboBox(row, values=months, width=44)
+        month_combo.set(f"{initial.month:02d}")
+        month_combo.pack(side="left", padx=(0, 6))
+        ctk.CTkLabel(row, text="Day", width=22).pack(side="left", padx=(0, 2))
+        days = [f"{i:02d}" for i in range(1, 32)]
+        day_combo = ctk.CTkComboBox(row, values=days, width=44)
+        _, last_day = monthrange(initial.year, initial.month)
+        day_combo.set(f"{min(initial.day, last_day):02d}")
+        day_combo.pack(side="left", padx=(0, 4))
+
+        btn_row = ctk.CTkFrame(win, fg_color="transparent")
+        btn_row.pack(fill="x", padx=10, pady=(0, 8))
+        ctk.CTkButton(btn_row, text="OK", width=80, command=on_ok).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(btn_row, text="Cancel", width=80, fg_color="gray", command=win.destroy).pack(side="left")
+
+        win.wait_window(win)
+        if result[0]:
+            iso = f"{result[0]}{time_suffix}"
+            entry.delete(0, "end")
+            entry.insert(0, iso)
 
     def _refresh_layout_combo(self):
         names = layouts.list_layouts()
@@ -483,11 +711,28 @@ class ExportFrame(ctk.CTkFrame):
         if not columns:
             messagebox.showwarning("Layout", "Selected layout has no columns.")
             return
-        date_option = self.date_combo.get()
-        self._log(f"Fetching invoices (dateOption={date_option})...")
+        use_range = self.date_mode.get() == "Date range"
+        start_date: Optional[str] = None
+        end_date: Optional[str] = None
+        date_option: Optional[str] = None
+        if use_range:
+            start_date = self.start_date_entry.get().strip() or None
+            end_date = self.end_date_entry.get().strip() or None
+            if not start_date or not end_date:
+                messagebox.showwarning("Date range", "Enter both Start and End date (ISO-8601, e.g. 2024-01-01T00:00:00Z).")
+                return
+            self._log(f"Fetching invoices (startDate={start_date}, endDate={end_date})...")
+        else:
+            date_option = self.date_combo.get()
+            self._log(f"Fetching invoices (dateOption={date_option})...")
         self.update_idletasks()
         try:
-            items = api.fetch_all_invoice_items(date_option=date_option, filtered_fields=True)
+            items = api.fetch_all_invoice_items(
+                date_option=date_option,
+                filtered_fields=True,
+                start_date=start_date,
+                end_date=end_date,
+            )
             self._log(f"Fetched {len(items)} invoice(s).")
             if not items:
                 self._log("No data to export.")
@@ -503,10 +748,10 @@ class ExportFrame(ctk.CTkFrame):
             if not path:
                 return
             if fmt == "csv":
-                export.export_to_csv(items, columns, path, expand_array_path=expand_array_path)
+                export.export_to_csv(items, columns, path, expand_array_path=expand_array_path, layout_options=layout_full)
             else:
-                export.export_to_xlsx(items, columns, path, expand_array_path=expand_array_path)
-            num_rows = len(layouts.rows_from_items(items, columns, expand_array_path))
+                export.export_to_xlsx(items, columns, path, expand_array_path=expand_array_path, layout_options=layout_full)
+            num_rows = len(layouts.rows_from_items(items, columns, expand_array_path, layout_options=layout_full))
             self._log(f"Exported to {path}")
             messagebox.showinfo("Export", f"Exported {num_rows} row(s) to {path}")
             if self._on_export:
@@ -516,21 +761,84 @@ class ExportFrame(ctk.CTkFrame):
             messagebox.showerror("Export error", str(e))
 
 
+def _docs_path() -> Path:
+    """Path to README.md: bundle root when frozen, else project root."""
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS) / "README.md"
+    return Path(__file__).resolve().parent.parent / "README.md"
+
+
+def _markdown_to_plain(md: str) -> str:
+    """Convert basic Markdown to plain text for readable display in a textbox."""
+    import re
+    def strip_bold(s: str) -> str:
+        return re.sub(r"\*\*([^*]+)\*\*", r"\1", s)
+
+    lines = md.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    out = []
+    in_code = False
+    code_indent = "    "
+    for line in lines:
+        if line.strip().startswith("```"):
+            in_code = not in_code
+            if in_code:
+                out.append("")
+            continue
+        if in_code:
+            out.append(code_indent + line)
+            continue
+        stripped = line.strip()
+        if not stripped:
+            out.append("")
+            continue
+        if re.match(r"^[-_]{3,}$", stripped):
+            out.append("")
+            out.append("─" * 40)
+            out.append("")
+            continue
+        if stripped.startswith("#"):
+            level = 0
+            while level < len(stripped) and stripped[level] == "#":
+                level += 1
+            rest = strip_bold(stripped[level:].strip())
+            if level == 1:
+                out.append("")
+                out.append(rest.upper())
+                out.append("")
+            else:
+                out.append("")
+                out.append(rest)
+                out.append("")
+            continue
+        if stripped.startswith("- ") or stripped.startswith("* "):
+            out.append("  • " + strip_bold(stripped[2:].strip()))
+            continue
+        if re.match(r"^\d+\.\s", stripped):
+            out.append("  " + strip_bold(stripped))
+            continue
+        out.append(strip_bold(line))
+    return "\n".join(out).strip() + "\n"
+
+
 class MainApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Command Alkon – Invoice Export")
-        self.geometry("720x560")
+        self.geometry("900x640")
+        self.minsize(760, 520)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        self.tabview = ctk.CTkTabview(self, width=700, height=520)
-        self.tabview.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-        self.tabview.add("Manage layouts")
-        self.tabview.add("Export")
-        self.tabview.add("Config")
+        self._build_help_menu()
 
-        self.config_frame = ConfigFrame(self.tabview.tab("Config"), fg_color="transparent")
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        self.tabview.add("Export")
+        self.tabview.add("Manage layouts")
+        self.tabview.add("Settings")
+        self.tabview.add("Documentation")
+
+        self.config_frame = ConfigFrame(self.tabview.tab("Settings"), fg_color="transparent")
         self.config_frame.pack(fill="both", expand=True)
 
         self.layouts_frame = LayoutsFrame(self.tabview.tab("Manage layouts"), fg_color="transparent")
@@ -538,6 +846,37 @@ class MainApp(ctk.CTk):
 
         self.export_frame = ExportFrame(self.tabview.tab("Export"), fg_color="transparent", on_export=self._on_export_done)
         self.export_frame.pack(fill="both", expand=True)
+
+        self._doc_frame = ctk.CTkFrame(self.tabview.tab("Documentation"), fg_color="transparent")
+        self._doc_frame.pack(fill="both", expand=True)
+        self._doc_text = ctk.CTkTextbox(self._doc_frame, font=ctk.CTkFont(size=11), wrap="word")
+        self._doc_text.pack(fill="both", expand=True, padx=12, pady=12)
+        self._doc_text.insert("1.0", self._load_documentation())
+        self._doc_text.configure(state="disabled")
+
+    def _build_help_menu(self):
+        try:
+            tk_root = getattr(self, "tk", self)
+            menubar = Menu(tk_root)
+            help_menu = Menu(menubar, tearoff=0)
+            help_menu.add_command(label="View documentation", command=self._focus_documentation_tab)
+            menubar.add_cascade(label="Help", menu=help_menu)
+            tk_root.configure(menu=menubar)
+        except Exception:
+            pass
+
+    def _load_documentation(self) -> str:
+        path = _docs_path()
+        try:
+            raw = path.read_text(encoding="utf-8") if path.exists() else ""
+        except Exception:
+            raw = ""
+        if not raw.strip():
+            return "Documentation not found. See README.md in the application folder."
+        return _markdown_to_plain(raw)
+
+    def _focus_documentation_tab(self):
+        self.tabview.set("Documentation")
 
     def _on_export_done(self):
         self.export_frame._refresh_layout_combo()

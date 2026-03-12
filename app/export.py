@@ -26,11 +26,12 @@ def export_to_csv(
     columns: list[dict],
     filepath: str | Path,
     expand_array_path: str | None = None,
+    layout_options: dict | None = None,
 ) -> None:
     """Write items to CSV. If expand_array_path is set, one row per array element with parent fields repeated (same headers)."""
     filepath = Path(filepath)
     headers = [c.get("title") or c.get("fieldPath") or "Column" for c in columns]
-    rows = rows_from_items(items, columns, expand_array_path)
+    rows = rows_from_items(items, columns, expand_array_path, layout_options=layout_options)
     with open(filepath, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(headers)
@@ -42,6 +43,7 @@ def export_to_xlsx(
     columns: list[dict],
     filepath: str | Path,
     expand_array_path: str | None = None,
+    layout_options: dict | None = None,
 ) -> None:
     """Write items to XLSX. If expand_array_path is set, one row per array element with parent fields repeated (same headers)."""
     try:
@@ -50,7 +52,7 @@ def export_to_xlsx(
         raise RuntimeError("openpyxl is required for XLSX export. Install with: pip install openpyxl")
 
     headers = [c.get("title") or c.get("fieldPath") or "Column" for c in columns]
-    rows = rows_from_items(items, columns, expand_array_path)
+    rows = rows_from_items(items, columns, expand_array_path, layout_options=layout_options)
 
     wb = Workbook()
     ws = wb.active

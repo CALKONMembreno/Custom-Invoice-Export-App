@@ -134,5 +134,10 @@
     "fg_color": ["gray90", "gray20"],
     "hover_color": ["#E6F0F9", "#003D73"],
     "text_color": ["gray10", "gray90"]
+  },
+  "CTkFont": {
+    "size": 13,
+    "family": "Roboto",
+    "weight": "normal"
   }
 }

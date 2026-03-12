@@ -1,12 +1,16 @@
-# Custom Invoice Export App
+# Command Alkon – Invoice Export
 
 On-premise desktop app to query Command Alkon billing invoices and export to CSV or XLSX using configurable layouts.
 
-## Features
+---
 
-- **Config (credentials)** – Store API credentials encrypted (Entity Ref, API Key, Client ID, Client Secret, API Scope Ref). Same OAuth-style login/refresh as `example.py`.
-- **Manage layouts** – Define export columns by field path (e.g. `paymentTerms.id`, `profile.firstName`) with optional custom column titles. Add blank columns. Import a JSON schema to get a list of field paths for reuse. **Export layouts** to a JSON file to share with customers; **Import layouts** to load a shared file.
-- **Export** – Pick date range (`dateOption`: Today, Yesterday, Last_7_Days, etc.), choose a layout, then export to CSV or XLSX. Fetches all pages automatically using `pageToken`.
+## Tabs
+
+- **Export** – Choose date filter, layout, and export to CSV or XLSX.
+- **Manage layouts** – Define columns, conditions, expand array, import schema, save/load/export/import layouts.
+- **Settings** – Store API credentials (encrypted).
+
+---
 
 ## Run locally
 
@@ -22,59 +26,91 @@ pip install -r requirements.txt
 pyinstaller invoice_export.spec
 ```
 
-The executable is created in `dist/InvoiceExport.exe`. Config, layouts, and imported schemas are stored in the `config/` folder next to the exe (or next to the project when run from source).
+The executable is in `dist/InvoiceExport.exe`. Config, layouts, and imported schemas are stored in the `config/` folder next to the exe (or next to the project when run from source).
 
-## Export and import layouts (for customers)
+---
 
-To reuse layouts across machines or share with customers:
+## Settings (API credentials)
 
-- **Export layouts** – In Manage layouts, click **Export layouts**, choose a location, and save a `.json` file (e.g. `invoice_export_layouts.json`). The file contains all your saved layouts (columns, titles, expand array, blank column custom text).
-- **Import layouts** – On another machine or for a customer, click **Import layouts** and select that JSON file. All layouts in the file are added (existing names are overwritten). The customer can then use those layouts in the Export tab.
+Store **Entity Ref**, **API Key**, **Client ID**, **Client Secret**, and **API Scope Ref**. Credentials are saved encrypted. The app uses the same OAuth-style login and token refresh as the reference example.
 
-The export file is plain JSON and can be versioned or edited if needed.
+---
 
-## Schema import
+## Export tab
 
-Use **Manage layouts** → **Import schema (JSON)** and select a JSON file (e.g. `exampleschema.json`) that has an `items` array. The app extracts nested field paths (e.g. `paymentTerms.id`) so you can pick them when adding columns. Imported files are copied to `config/schemas/` for reuse.
+1. **Date filter**
+   - **Date option** – Use a preset: Today, Yesterday, Last_7_Days, Last_Month, etc.
+   - **Date range** – Enter Start and End in ISO-8601 (e.g. `2024-01-01T00:00:00Z`, `2024-01-31T23:59:59Z`). Use **Pick date** for each to choose Year/Month/Day; Start defaults to 00:00:00 and End to 23:59:59. When you switch to Date range, defaults are first and last day of the current month.
+2. **Layout** – Choose a saved layout (create and edit in Manage layouts).
+3. **Export to CSV** or **Export to XLSX** – Fetches all invoice pages and writes the file.
 
-## How arrays are managed
+---
 
-Invoice data often contains **arrays** (e.g. `contacts`, `invoiceSections`, `billables`, `lineItems`). Layout field paths handle them like this:
+## Manage layouts
 
-- **First element by default** – If the next path segment is a property name (not a number), the app uses the **first** element of the array.  
-  Examples:  
-  - `contacts.email` → first contact’s email  
-  - `contacts.firstName` → first contact’s first name  
-  - `profile.firstName` → from the single `profile` object (no array)
+- **Import schema (JSON)** – Load a JSON file (e.g. `exampleschema.json`) with an `items` structure. The app extracts field paths (e.g. `paymentTerms.id`, `invoiceSections.billables.lineItems.q`) and saves the file to `config/schemas/` for reuse. The **Expand array** dropdown and **Pick…** field list are filled from the schema.
+- **Expand array** – Choose an array path (e.g. `invoiceSections.billables.lineItems`) to export **one row per element**; invoice-level columns repeat on each row. Use **(None)** for one row per invoice.
+- **Columns** – Add **field column** (path + optional title) or **blank column** (title + optional custom text in every row). Use **Pick…** to choose a path from the schema. Reorder with the grip (⋮⋮), ▲/▼, or drag. **Conditions…** lets you define replace rules (see below).
+- **Layout name** – **Load** / **Save** layout by name. **Export layouts** writes all saved layouts to a JSON file; **Import layouts** loads that file (overwrites same names).
 
-- **Specific index** – Use a **numeric** segment to target an index.  
-  Examples:  
-  - `contacts.0.email` → first contact’s email  
-  - `contacts.1.email` → second contact’s email  
-  - `invoiceSections.0.projectName` → first section’s project name  
-  - `invoiceSections.1.customerName` → second section’s customer name  
+### Optional: blank rows (empty lines)
 
-- **Nested arrays** – Same rules apply at each level: use the next key for “first element” or a number for an index.  
-  Example: `invoiceSections.0.billables.0.orderId` → first section’s first billable’s order ID.
+Layouts can optionally insert **blank rows** into the export output (CSV/XLSX). This is configured directly in the saved layout JSON file in `config/layouts/*.json`.
 
-- **Whole array/object** – If the path ends at an array or object, the cell value is the **JSON string** of that value (e.g. for debugging or custom use).
+- **blankRowsBeforeEmptyExpandedRow** – Integer. When **Expand array** is set and an invoice has an empty array at that path, the app still emits one row (parent columns filled, expanded columns empty). Set this to add N blank rows **before** that “empty expanded” row.
+- **blankRowsBefore** – List of rules. Each rule can insert blank rows before any output row when the resolved value at a path matches a condition.
 
-When you **import a schema**, the extracted field paths use the first element for arrays (e.g. `contacts.email`), so you get one column per logical field. You can still add or edit paths manually to use explicit indices (e.g. `contacts.1.phone`) when needed.
+Example:
 
-## Export all array items and repeated headers
+```json
+{
+   "name": "My Layout",
+   "columns": [
+      {"fieldPath": "id", "title": "InvoiceNbr", "blank": false},
+      {"fieldPath": "invoiceSections.billables.lineItems.productId", "title": "ProductId", "blank": false}
+   ],
+   "expandArrayPath": "invoiceSections.billables.lineItems",
+   "blankRowsBeforeEmptyExpandedRow": 2,
+   "blankRowsBefore": [
+      {"path": "invoiceSections.billables.lineItems.productId", "operator": "is_blank", "count": 1}
+   ]
+}
+```
 
-You can **export one row per array element** instead of one row per invoice:
+### Column conditions
 
-1. In **Manage layouts**, set **Expand array** to the array you want to expand (e.g. `contacts`, `invoiceSections`). The dropdown is filled when you import a schema (it lists top-level arrays). Choose **(None)** for normal export (one row per invoice).
-2. Save the layout. When you export, the app will:
-   - Output **one row for each element** in that array (e.g. one row per contact).
-   - **Repeat the same column headers** once at the top (no repeated header rows in the file).
-   - **Repeat parent/invoice fields** on every row: invoice-level columns (e.g. `id`, `crn`, `paymentTerms.id`) have the same value on each row for that invoice; columns under the expanded array (e.g. `contacts.email`) get the value for the current element.
+For any field column, **Conditions…** lets you add rules: **if** the cell value matches a rule, **replace** with a given value. First matching rule wins. Supported operators:
 
-Example: with **Expand array** = `contacts` and columns `id`, `crn`, `contacts.email`, `contacts.firstName`, an invoice with two contacts produces two data rows, both with the same `id` and `crn`, and different `contacts.email` / `contacts.firstName`. Headers appear once; the “headers” (invoice-level fields) are repeated on each row.
+- **equal** / **not equal** – Exact match (text or number).
+- **contains** / **not contains** – Substring in cell value.
+- **greater** / **greater or equal** / **less** / **less or equal** – Numeric when both sides are numbers; otherwise string comparison.
+- **is blank** / **is not blank** – No comparison value; match empty or non-empty cells.
 
-If the array is empty for an invoice, one row is still emitted with invoice fields filled and the array columns blank.
+---
 
-## Date options
+## Field paths and arrays
 
-Supported `dateOption` values: Today, Yesterday, Tomorrow, This_Week, Last_3_Days, Last_7_Days, Last_30_Days, This_Month, Last_Month, Last_3_Months, Last_6_Months, Last_12_Months, Last_12_Hours, Last_18_Hours, Last_24_Hours, This_Year, Last_Year.
+- **Dot notation** – Paths like `paymentTerms.id`, `profile.firstName`, `invoiceSections.billables.lineItems.q`.
+- **First element** – If the next segment is a property name, the app uses the **first** element of an array (e.g. `contacts.email` → first contact’s email).
+- **Numeric index** – Use a number for a specific index: `contacts.0.email`, `invoiceSections.1.projectName`.
+- **Expand array** – With **Expand array** set (e.g. `invoiceSections.billables.lineItems`), the export has one row per array element; headers appear once; invoice-level columns repeat on each row.
+
+---
+
+## Export and import layouts (sharing)
+
+- **Export layouts** – Saves all saved layouts to a single JSON file (columns, titles, conditions, expand array, blank column text). Share this file with other users or machines.
+- **Import layouts** – Load that JSON file; all layouts in the file are added (same names overwrite). No need to reconfigure columns by hand.
+
+---
+
+## Date options (presets)
+
+When using **Date option**: Today, Yesterday, Tomorrow, This_Week, Last_3_Days, Last_7_Days, Last_30_Days, This_Month, Last_Month, Last_3_Months, Last_6_Months, Last_12_Months, Last_12_Hours, Last_18_Hours, Last_24_Hours, This_Year, Last_Year.
+
+---
+
+## Requirements
+
+- Python 3.10+
+- requests, customtkinter, cryptography, openpyxl (see `requirements.txt`)

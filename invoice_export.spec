@@ -12,6 +12,7 @@ a = Analysis(
     datas=[
         ('exampleschema.json', '.'),
         ('app/themes/commandalkon.json', 'app/themes'),  # Command Alkon color theme
+        ('README.md', '.'),  # In-app Help documentation
     ],
     hiddenimports=[
         'customtkinter',

@@ -40,12 +40,15 @@ def _safe_json(response: requests.Response) -> dict | list:
 
 
 def get_invoices_paginated(
-    date_option: str = "Yesterday",
+    date_option: Optional[str] = "Yesterday",
     filtered_fields: bool = True,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
 ) -> Iterator[dict]:
     """
-    Yield pages of invoice data. Each yielded value is the raw response dict
-    with 'items', 'itemCount', and optionally 'pageToken'.
+    Yield pages of invoice data. Use either date_option (e.g. 'Yesterday') or
+    start_date/end_date (ISO-8601), not both. When start_date and end_date are
+    both set, they are used; otherwise date_option is used.
     """
     creds = load_credentials()
     if not creds:
@@ -56,11 +59,16 @@ def get_invoices_paginated(
     page_token: Optional[str] = None
     seen_tokens: set = set()
 
+    use_range = start_date and end_date
     while True:
         params: dict = {
-            "dateOption": date_option,
             "filteredFields": "true" if filtered_fields else "false",
         }
+        if use_range:
+            params["startDate"] = start_date
+            params["endDate"] = end_date
+        else:
+            params["dateOption"] = date_option or "Yesterday"
         if page_token:
             if page_token in seen_tokens:
                 break
@@ -86,12 +94,19 @@ def get_invoices_paginated(
 
 
 def fetch_all_invoice_items(
-    date_option: str = "Yesterday",
+    date_option: Optional[str] = "Yesterday",
     filtered_fields: bool = True,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
 ) -> list[dict[str, Any]]:
-    """Fetch all invoice items across all pages."""
+    """Fetch all invoice items. Use either date_option or start_date+end_date (ISO-8601), not both."""
     all_items: list = []
-    for page in get_invoices_paginated(date_option=date_option, filtered_fields=filtered_fields):
+    for page in get_invoices_paginated(
+        date_option=date_option,
+        filtered_fields=filtered_fields,
+        start_date=start_date,
+        end_date=end_date,
+    ):
         items = page.get("items") if isinstance(page, dict) else []
         if isinstance(items, list):
             all_items.extend(items)

@@ -14,7 +14,8 @@
     {
       "fieldPath": "invoiceSections.billables.lineItems.productId",
       "title": "ProductId",
-      "blank": false
+      "blank": false,
+      "conditions": []
     },
     {
       "fieldPath": "invoiceSections.billables.lineItems.productName",
@@ -29,7 +30,8 @@
     {
       "fieldPath": "invoiceSections.billables.lineItems.unitPrice",
       "title": "UnitPrice",
-      "blank": false
+      "blank": false,
+      "conditions": []
     },
     {
       "fieldPath": "invoiceSections.billables.lineItems.extendedPrice",
