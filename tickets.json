@@ -1,0 +1,902 @@
+{
+  "items": [
+    {
+      "crn": "string",
+      "purchaseOrder": "string",
+      "typeId": "ticket",
+      "dataSourceType": {
+        "createdBy": "PUBLIC_API",
+        "modifiedBy": "PUBLIC_API"
+      },
+      "originatorSystemType": "COMMAND_BATCH",
+      "originatorSystemId": "string",
+      "originatorClientId": "string",
+      "originatorCreatedDateTime": "2026-03-24T22:31:45.535Z",
+      "originatorModifiedDateTime": "2026-03-24T22:31:45.535Z",
+      "originatorRecordId": "string",
+      "createdBy": {
+        "profileRef": "string",
+        "id": "string",
+        "name": "string"
+      },
+      "id": "string",
+      "loadNumber": 0,
+      "dispatchDateTime": "2026-03-24T22:31:45.535Z",
+      "currencyCode": "AFN",
+      "erpExported": true,
+      "eTicketEligible": true,
+      "eTicketStatus": "PUBLISHED",
+      "eTicketContacts": [
+        {
+          "contactRole": "string",
+          "userRef": "string",
+          "name": "string",
+          "phone": "string",
+          "email": "string"
+        }
+      ],
+      "supplierStatus": {
+        "eventDateTime": "2026-03-24T22:31:45.535Z",
+        "statusCode": "CREATED",
+        "changeBy": {
+          "profileRef": "string",
+          "id": "string",
+          "name": "string"
+        },
+        "reasonCode": "string",
+        "reasonRef": "string",
+        "reason": "string",
+        "voidCorrectionInfo": {
+          "isVoidCorrected": true,
+          "originalTicketRef": "string",
+          "originalTicketId": "string"
+        }
+      },
+      "paymentMethod": "string",
+      "customerParty": {
+        "entityRef": "string",
+        "id": "string",
+        "name": "string",
+        "originatorRecordId": "string",
+        "contacts": [
+          {
+            "contactRole": "string",
+            "userRef": "string",
+            "name": "string",
+            "phone": "string",
+            "email": "string"
+          }
+        ],
+        "address": {
+          "address1": "1954 Elmer J Bissell Rd",
+          "city": "Birmingham",
+          "countryCode": "USA",
+          "countrySubDivision": "AL",
+          "postalCode": "35243",
+          "coordinates": {
+            "latitude": 33.41261,
+            "longitude": -86.76237
+          }
+        },
+        "job": "string",
+        "phoneNumber": "string",
+        "creditCodeRef": "string",
+        "creditCodeId": "string",
+        "additionalProp": {}
+      },
+      "carrierParty": {
+        "entityRef": "string",
+        "id": "string",
+        "name": "string",
+        "companyFleet": true,
+        "originatorRecordId": "string",
+        "contacts": [
+          {
+            "contactRole": "string",
+            "userRef": "string",
+            "name": "string",
+            "phone": "string",
+            "email": "string"
+          }
+        ]
+      },
+      "driver": {
+        "id": "string",
+        "driverRef": "string",
+        "originatorRecordId": "string",
+        "firstName": "string",
+        "lastName": "string"
+      },
+      "salesPerson": {
+        "userRef": "string",
+        "firstName": "string",
+        "lastName": "string",
+        "email": "string",
+        "name": "string",
+        "profileRef": "string"
+      },
+      "weighMaster": {
+        "id": "string",
+        "originatorRecordId": "string",
+        "userRef": "string",
+        "firstName": "string",
+        "lastName": "string",
+        "dotCertification": "string",
+        "dotCertExpireDate": "2024-06-30"
+      },
+      "inventoryProduct": {
+        "productRef": "string",
+        "netWeight": {
+          "value": 0,
+          "uomCode": "string"
+        }
+      },
+      "containers": [
+        {
+          "vehicle": {
+            "id": "string",
+            "description": "string",
+            "vehicleType": {
+              "vehicleTypeRef": "string",
+              "id": "string",
+              "description": "string",
+              "systemVehicleType": "BULK_MATERIALS"
+            },
+            "originatorRecordId": "string",
+            "licensePlate": "string",
+            "vehicleRef": "string"
+          },
+          "item": {
+            "id": "string",
+            "description": "string"
+          }
+        }
+      ],
+      "jobArea": {
+        "id": "string",
+        "description": "string",
+        "jobAreaRef": "string"
+      },
+      "operation": "string",
+      "scheduledEvents": {
+        "IN_YARD": "2023-01-30T14:49:00.000Z",
+        "UNLOADING": "2023-01-30T14:19:00.000Z",
+        "ARRIVE_JOB": "2023-01-30T14:09:00.000+00:00",
+        "PRINTED": "2023-01-30T13:53:00.000Z",
+        "TO_JOB": "2023-01-30T14:09:00.000Z",
+        "LEAVE_JOB": "2023-01-30T14:49:00.000Z",
+        "LOADING_STARTED": "2023-01-30T13:56:00.000Z",
+        "END_UNLOADING": "2023-01-30T14:29:00.000Z"
+      },
+      "dispatchOrder": {
+        "dispatchOrderRef": "string",
+        "id": "string",
+        "originatorRecordId": "string",
+        "description": "string",
+        "totalTicketed": {
+          "loadNumber": 9,
+          "value": 87.5,
+          "uomCode": "YDQ",
+          "accumulatedLoad": 8,
+          "ticketedToday": 82.5,
+          "reasonCode": "string",
+          "additionalProp": {}
+        },
+        "phase": {
+          "phaseRef": "11111111-1111-1111-1111",
+          "name": "Phase 1",
+          "id": "PH-001"
+        },
+        "additionalProp": {}
+      },
+      "orderRequest": {
+        "orderRequestRef": "string",
+        "orderRef": "string",
+        "id": "string",
+        "description": "string"
+      },
+      "orderDiscipline": {
+        "disciplineRef": "string",
+        "id": "string",
+        "description": "string"
+      },
+      "invoiceFrequency": "string",
+      "commerceTypeCode": "BUY",
+      "salesAnalysis": {
+        "id": "string",
+        "description": "string"
+      },
+      "deliveryOption": "string",
+      "transportationTermsCode": "EXW",
+      "inventoryLocation": "string",
+      "supplierSalesOrder": {
+        "id": "26-0233",
+        "name": "City Riverwalk",
+        "dotContractId": "PMC10-2085.2",
+        "isPrevailingWage": false,
+        "contractNumber": "2023-001",
+        "customData": {
+          "keyWith20Characters1": "valueWith30Characters123456789",
+          "erpRecordId": "H2S-EAS",
+          "erpShipTo": "D87"
+        }
+      },
+      "origin": {
+        "id": "string",
+        "originatorRecordId": "string",
+        "description": "string",
+        "latitude": 0,
+        "longitude": 0,
+        "address": {
+          "address1": "1954 Elmer J Bissell Rd",
+          "city": "Birmingham",
+          "countryCode": "USA",
+          "countrySubDivision": "AL",
+          "postalCode": "35243",
+          "coordinates": {
+            "latitude": 33.41261,
+            "longitude": -86.76237
+          }
+        },
+        "scale": {
+          "id": "string",
+          "name": "string",
+          "isQuantityImmutable": false,
+          "siloId": "string"
+        },
+        "dotCertification": "string",
+        "timeZone": "string",
+        "dispatchLocationRef": "string",
+        "dispatchLocationId": "string",
+        "additionalProp": {}
+      },
+      "returnDestination": {
+        "id": "string",
+        "originatorRecordId": "string",
+        "description": "string",
+        "latitude": 0,
+        "longitude": 0,
+        "address": {
+          "address1": "1954 Elmer J Bissell Rd",
+          "city": "Birmingham",
+          "countryCode": "USA",
+          "countrySubDivision": "AL",
+          "postalCode": "35243",
+          "coordinates": {
+            "latitude": 33.41261,
+            "longitude": -86.76237
+          }
+        },
+        "scale": {
+          "id": "string",
+          "name": "string",
+          "isQuantityImmutable": false,
+          "siloId": "string"
+        },
+        "dotCertification": "string",
+        "timeZone": "string",
+        "dispatchLocationRef": "string",
+        "dispatchLocationId": "string",
+        "additionalProp": {}
+      },
+      "invoice": {
+        "id": "string",
+        "invoiceDateTime": "2026-03-24T22:31:45.535Z"
+      },
+      "destination": {
+        "id": "string",
+        "originatorRecordId": "string",
+        "description": "string",
+        "latitude": 0,
+        "longitude": 0,
+        "address": {
+          "address1": "1954 Elmer J Bissell Rd",
+          "city": "Birmingham",
+          "countryCode": "USA",
+          "countrySubDivision": "AL",
+          "postalCode": "35243",
+          "coordinates": {
+            "latitude": 33.41261,
+            "longitude": -86.76237
+          }
+        },
+        "contacts": [
+          {
+            "contactRole": "string",
+            "userRef": "string",
+            "name": "string",
+            "phone": "string",
+            "email": "string"
+          }
+        ],
+        "deliveryZone": {
+          "id": "string",
+          "description": "string"
+        },
+        "deliveryBlock": "string",
+        "deliveryLots": [
+          "string"
+        ],
+        "instructions": "string",
+        "additionalProp": {}
+      },
+      "primaryItemType": "string",
+      "freight": {
+        "freightRef": "A GUID GOES HERE",
+        "includeInUnitPrice": false,
+        "chargeQuantity": 1,
+        "chargeUOM": "EACH",
+        "payQuantity": 1,
+        "payUOM": "EACH",
+        "priceSummary": {
+          "isTaxable": false,
+          "chargeRate": 10,
+          "chargeRateType": "FLAT",
+          "payRate": 1,
+          "payRateType": "FLAT",
+          "totalPay": 1,
+          "countyTax": 0,
+          "cityTax": 0,
+          "districtTax": 0,
+          "salesTax": 0,
+          "stateTax": 0,
+          "extendedCharge": 10,
+          "totalCharge": 10,
+          "priceSource": "VEHICLE"
+        }
+      },
+      "lineItems": [
+        {
+          "item": {
+            "productRef": "string",
+            "lineItemRef": "string",
+            "id": "string",
+            "description": "string",
+            "originatorRecordId": "string",
+            "itemCategory": "string",
+            "itemType": "string",
+            "productType": {
+              "productTypeRef": "string",
+              "systemProductType": "string"
+            },
+            "itemSubType": "FINE",
+            "pricingPlanId": "MINIMUM LOAD",
+            "productionItem": {
+              "id": "string",
+              "description": "string",
+              "year": "string"
+            },
+            "specifiedProperties": {
+              "consistenceClass": "string",
+              "consistenceClassType": "SLUMP",
+              "maxWatCemRatio": 0,
+              "slump": 0
+            },
+            "additionalProp": {}
+          },
+          "customerItem": {
+            "id": "string",
+            "description": "string"
+          },
+          "isPrimary": true,
+          "isAdded": true,
+          "isTaxable": true,
+          "ruleRef": "string",
+          "unitPrice": 0,
+          "extendedPrice": 0,
+          "reshippedTicket": {
+            "id": "string",
+            "dispatchOrderId": "string",
+            "originatorRecordId": "string",
+            "originatorSystemType": "COMMAND_BATCH",
+            "originatorSystemId": "string",
+            "dispatchOrderRef": "string",
+            "latestEventStatusTime": "2026-03-24T22:31:45.535Z",
+            "dispatchDateTime": "2026-03-24T22:31:45.535Z",
+            "originRef": "string",
+            "originId": "string",
+            "ticketRef": "string",
+            "latestEventStatus": "string"
+          },
+          "customerOrderItem": {
+            "haulCostCode": "string",
+            "productCostCode": "string",
+            "purchaseOrder": {
+              "number": "string",
+              "line": "string"
+            },
+            "typeOfWork": "string",
+            "resourceCode": {
+              "id": "string",
+              "description": "string",
+              "resourceCodeRef": "string"
+            }
+          },
+          "priceSummary": {
+            "unitPrice": 105,
+            "unitPriceWithFreight": 105,
+            "countyTax": 10.5,
+            "countyTaxWithFreight": 0,
+            "totalPrice": 1155,
+            "totalPriceWithFreight": 1155,
+            "jurisdiction": {
+              "county": "JEFFERSON",
+              "zip": "35243",
+              "country": "US",
+              "state": "AL",
+              "city": "BIRMINGHAM"
+            },
+            "isTaxable": true,
+            "districtTax": 10.5,
+            "districtTaxWithFreight": 0,
+            "stateTax": 42,
+            "stateTaxWithFreight": 0,
+            "percentTax": 0,
+            "salesTax": 105,
+            "salesTaxWithFreight": 0,
+            "cityTax": 42,
+            "cityTaxWithFreight": 0,
+            "taxRateRef": "2b69717472453067f17336195010edbb68ea9",
+            "extendedPrice": 1050,
+            "extendedPriceWithFreight": 1050,
+            "priceSource": "Project",
+            "taxValues": [
+              {
+                "name": "city",
+                "value": 0
+              },
+              {
+                "name": "state",
+                "value": 6.45
+              },
+              {
+                "name": "county",
+                "value": 1.5
+              },
+              {
+                "name": "district",
+                "value": 1.05
+              },
+              {
+                "name": "percent",
+                "value": 0
+              },
+              {
+                "name": "total",
+                "value": 9
+              }
+            ]
+          },
+          "costSummary": {
+            "unitCost": 105,
+            "source": "MIX_FORMULA",
+            "missingCosts": false,
+            "extendedCost": 892.5
+          },
+          "taxCode": {
+            "taxCodeRef": "string",
+            "status": "string",
+            "name": "string",
+            "id": "string",
+            "salesTaxRate": 0,
+            "taxExempt": true,
+            "country": "string",
+            "state": "string",
+            "county": "string",
+            "city": "string",
+            "district": "string",
+            "isSubjectToMaxTax": true,
+            "effectiveDate": "string",
+            "reasonCodeRef": "string",
+            "maxTaxableAmount": 0,
+            "taxJurisdiction": "string"
+          },
+          "additionalProp": {}
+        }
+      ],
+      "priceSummary": {
+        "cityTax": 0,
+        "stateTax": 6.45,
+        "countyTax": 1.5,
+        "districtTax": 1.05,
+        "salesTax": 9,
+        "percentTax": 0,
+        "taxPerProduct": true,
+        "subtotalPrice": 150,
+        "taxableSubtotal": 150,
+        "totalPrice": 159,
+        "totalFees": 0,
+        "taxRate": {
+          "taxRateRef": "454365454nc4554",
+          "taxLocation": "origin",
+          "jurisdiction": {
+            "city": "CLIFTON",
+            "state": "VA",
+            "county": "FAIRFAX",
+            "zip": "20124",
+            "country": "US"
+          },
+          "taxable": {
+            "service": "N",
+            "freight": "N"
+          },
+          "total": {
+            "sales": 0.06,
+            "use": 0.06
+          },
+          "state": {
+            "sales": 0.043,
+            "use": 0.043
+          },
+          "county": {
+            "taxCode": "51059",
+            "sales": 0.01,
+            "use": 0.01
+          },
+          "city": {
+            "taxCode": "",
+            "sales": 0,
+            "use": 0
+          },
+          "district": {
+            "sales": 0.007,
+            "use": 0.007
+          },
+          "taxRates": [
+            {
+              "name": "gst",
+              "sales": 0,
+              "use": 0
+            },
+            {
+              "name": "qst",
+              "sales": 0,
+              "use": 0
+            },
+            {
+              "name": "hst",
+              "sales": 0,
+              "use": 0
+            },
+            {
+              "name": "total",
+              "sales": 0,
+              "use": 0
+            }
+          ]
+        },
+        "taxValues": [
+          {
+            "name": "city",
+            "value": 0
+          },
+          {
+            "name": "state",
+            "value": 6.45
+          },
+          {
+            "name": "county",
+            "value": 1.5
+          },
+          {
+            "name": "district",
+            "value": 1.05
+          },
+          {
+            "name": "percent",
+            "value": 0
+          },
+          {
+            "name": "total",
+            "value": 9
+          }
+        ],
+        "lineItemsTotals": {
+          "subtotalPrice": 150,
+          "totalPrice": 159,
+          "taxValues": [
+            {
+              "name": "city",
+              "value": 0
+            },
+            {
+              "name": "state",
+              "value": 6.45
+            }
+          ]
+        }
+      },
+      "costSummary": {
+        "totalCost": 237.42
+      },
+      "signatures": {
+        "timestamp": "2026-03-24T22:31:45.535Z",
+        "signerName": "string",
+        "image": "string"
+      },
+      "isVoided": true,
+      "billingNote": "string",
+      "mixInfo": {
+        "minTemp": 0,
+        "maxTemp": 0,
+        "tempUomIsoCode": "string",
+        "minSlump": 0,
+        "maxSlump": 0,
+        "targetSlump": 0,
+        "slumpUomIsoCode": "string"
+      },
+      "weightCaptureInfo": {
+        "isOverloadedReceive": true,
+        "isManualCapture": true,
+        "capturedBy": {
+          "profileRef": "string",
+          "id": "string",
+          "name": "string"
+        },
+        "reasonCode": "string",
+        "reasonRef": "string",
+        "reason": "string",
+        "isScaleUnavailable": false,
+        "auditWeight": {
+          "value": 0,
+          "uomCode": "LBR"
+        },
+        "scaleInMotion": false
+      },
+      "latestEventStatus": {
+        "statusCode": "END_UNLOADING",
+        "eventDate": "2025-01-01T12:23:54Z"
+      },
+      "customerStatus": {
+        "statusCode": "string",
+        "additionalProp": {}
+      },
+      "shipReceive": "SHIP",
+      "weather": {
+        "END_UNLOADING": {
+          "temperature": 94.9,
+          "weather": {
+            "icon": "c01d",
+            "description": "Clear sky",
+            "code": 800
+          },
+          "units": {
+            "temperature": "F",
+            "pressure": "inHg",
+            "distance": "mi",
+            "speed": "mph"
+          },
+          "measurementSystem": "imperial"
+        },
+        "LEAVE_JOB": {
+          "temperature": 94.9,
+          "weather": {
+            "icon": "c01d",
+            "description": "Clear sky",
+            "code": 800
+          },
+          "units": {
+            "temperature": "F",
+            "pressure": "inHg",
+            "distance": "mi",
+            "speed": "mph"
+          },
+          "measurementSystem": "imperial"
+        }
+      },
+      "isAsphaltBatch": false,
+      "mixerDoorNumber": "string",
+      "paymentMethodData": {
+        "id": "string",
+        "name": "string",
+        "paymentMethodRef": "string",
+        "fees": [
+          {
+            "name": "string",
+            "feeTypeId": "percentageOfPretaxTotal",
+            "data": {
+              "amount": 0
+            }
+          }
+        ]
+      },
+      "ticketEvents": {
+        "CREATED": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "PRINTED": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "LOADING_STARTED": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "LOADING_COMPLETE": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "TO_JOB": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "ARRIVE_JOB": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "UNLOADING": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "END_UNLOADING": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "LEAVE_JOB": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "IN_YARD": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "WASHING": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "END_WASHING": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "ARRIVE_PLANT": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "READY_TO_PUMP": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "PUMPING_STARTED": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        },
+        "PUMPING_COMPLETE": {
+          "statusCode": "CREATED",
+          "eventDateTime": "2026-03-24T22:31:45.535Z",
+          "longitude": 0,
+          "latitude": 0,
+          "source": "trackit",
+          "changeType": "GEOFENCE",
+          "override": {
+            "eventDateTime": "2026-03-24T22:31:45.535Z",
+            "reasonCode": "string"
+          }
+        }
+      },
+      "additionalProp": {}
+    }
+  ],
+  "itemCount": 0,
+  "pageToken": "string"
+}

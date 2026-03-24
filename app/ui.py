@@ -446,7 +446,9 @@ class LayoutsFrame(ctk.CTkFrame):
         path_entry.pack(fill="x", padx=10, pady=4)
         list_frame = ctk.CTkScrollableFrame(win, width=380, height=140, fg_color=("gray90", "gray20"))
         list_frame.pack(fill="both", expand=True, padx=10, pady=4)
-        max_visible = 150
+        # Tickets schemas can be large; keep this high so common groups like
+        # `containers.*` don't get pushed past the cap.
+        max_visible = 2000
         all_paths = self._field_paths if self._field_paths else []
 
         def refresh_list():
