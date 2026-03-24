@@ -1,6 +1,6 @@
 # Command Alkon – Invoice Export
 
-On-premise desktop app to query Command Alkon billing invoices and export to CSV or XLSX using configurable layouts.
+On-premise desktop app to query Command Alkon billing **invoices or billables**, and dispatch **tickets**, then export to CSV or XLSX using configurable layouts.
 
 Created by: Cristopher Membreno, Solutions Specialist
 
@@ -10,7 +10,7 @@ Support: cmembreno@commandalkon.com, +13464957475
 
 ## Tabs
 
-- **Export** – Choose date filter, layout, and export to CSV or XLSX.
+- **Export** – Choose **Invoices**, **Billables**, or **Tickets**, date filter, layout, and export to CSV or XLSX.
 - **Manage layouts** – Define columns, conditions, expand array, import schema, save/load/export/import layouts.
 - **Settings** – Store API credentials (encrypted).
 
@@ -42,6 +42,8 @@ Store **Entity Ref**, **API Key**, **Client ID**, **Client Secret**, and **API S
 
 ## Export tab
 
+1. **Data**
+   - Choose **Invoices**, **Billables**, or **Tickets**.
 1. **Date filter**
    - **Date option** – Use a preset: Today, Yesterday, Last_7_Days, Last_Month, etc.
    - **Date range** – Enter Start and End in ISO-8601 (e.g. `2024-01-01T00:00:00Z`, `2024-01-31T23:59:59Z`). Use **Pick date** for each to choose Year/Month/Day; Start defaults to 00:00:00 and End to 23:59:59. When you switch to Date range, defaults are first and last day of the current month.
@@ -52,7 +54,12 @@ Store **Entity Ref**, **API Key**, **Client ID**, **Client Secret**, and **API S
 
 ## Manage layouts
 
-- **Import schema (JSON)** – Load a JSON file (e.g. `exampleschema.json`) with an `items` structure. The app extracts field paths (e.g. `paymentTerms.id`, `invoiceSections.billables.lineItems.q`) and saves the file to `config/schemas/` for reuse. The **Expand array** dropdown and **Pick…** field list are filled from the schema.
+- **Schema for (Invoices/Billables/Tickets)** – Choose what you're building a layout against.
+- **Import schema (JSON)** – Load a JSON file (e.g. `exampleschema.json`) with an `items` structure. The app extracts field paths (e.g. `paymentTerms.id`, `invoiceSections.billables.lineItems.q`) and caches the file for reuse:
+   - Invoices: `config/schemas/invoices/`
+   - Billables: `config/schemas/billables/`
+   - Tickets: `config/schemas/tickets/`
+   The **Expand array** dropdown and **Pick…** field list are filled from the schema.
 - **Expand array** – Choose an array path (e.g. `invoiceSections.billables.lineItems`) to export **one row per element**; invoice-level columns repeat on each row. Use **(None)** for one row per invoice.
 - **Columns** – Add **field column** (path + optional title) or **blank column** (title + optional custom text in every row). Use **Pick…** to choose a path from the schema. Reorder with the grip (⋮⋮), ▲/▼, or drag. **Conditions…** lets you define replace rules (see below).
 - **Layout name** – **Load** / **Save** layout by name. **Export layouts** writes all saved layouts to a JSON file; **Import layouts** loads that file (overwrites same names).

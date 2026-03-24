@@ -12,7 +12,7 @@ from typing import Callable, Optional
 import customtkinter as ctk
 
 from . import config, api, layouts, export, schemas
-from .config import SCHEMAS_DIR, load_settings, save_settings
+from .config import load_settings, save_settings
 
 
 # Date options for the API
@@ -94,7 +94,18 @@ class LayoutsFrame(ctk.CTkFrame):
         ctk.CTkLabel(self._scroll, text="Manage layouts", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
         ctk.CTkLabel(self._scroll, text="Add columns by field path (e.g. paymentTerms.id) and optional custom title. Add blank columns as needed.", font=ctk.CTkFont(size=11)).pack(anchor="w", padx=10, pady=(0, 8))
 
-        # Schema import
+        # Schema kind selector + import
+        kind_row = ctk.CTkFrame(self._scroll, fg_color="transparent")
+        kind_row.pack(fill="x", padx=10, pady=(4, 0))
+        ctk.CTkLabel(kind_row, text="Schema for", width=100).pack(side="left", padx=(0, 8))
+        self.schema_kind = ctk.CTkSegmentedButton(
+            kind_row,
+            values=["Invoices", "Billables", "Tickets"],
+            command=self._on_schema_kind_change,
+        )
+        self.schema_kind.pack(side="left", padx=(0, 8))
+        self.schema_kind.set("Invoices")
+
         schema_row = ctk.CTkFrame(self._scroll, fg_color="transparent")
         schema_row.pack(fill="x", padx=10, pady=4)
         ctk.CTkButton(schema_row, text="Import schema (JSON)", command=self._import_schema, width=160).pack(side="left", padx=(0, 8))
@@ -317,19 +328,55 @@ class LayoutsFrame(ctk.CTkFrame):
         ctk.CTkButton(btn_row, text="OK", width=80, command=_save).pack(side="left", padx=(0, 8))
         ctk.CTkButton(btn_row, text="Cancel", width=80, fg_color="gray", command=win.destroy).pack(side="left")
 
+    def _schema_kind_key(self) -> str:
+        v = (self.schema_kind.get() or "Invoices").strip().lower()
+        if v.startswith("bill"):
+            return "billables"
+        if v.startswith("tick"):
+            return "tickets"
+        return "invoices"
+
+    def _last_schema_setting_key(self) -> str:
+        k = self._schema_kind_key()
+        if k == "billables":
+            return "lastSchemaBillables"
+        if k == "tickets":
+            return "lastSchemaTickets"
+        return "lastSchemaInvoices"
+
     def _load_last_schema_if_saved(self):
-        """On startup, reload the last imported schema from config/schemas/ if saved."""
-        name = load_settings().get("lastSchema")
+        """On startup, reload the last imported schema for the current schema kind."""
+        settings = load_settings()
+        # Back-compat: older versions used "lastSchema" (invoice-only).
+        name = settings.get(self._last_schema_setting_key())
+        if not name and self._schema_kind_key() == "invoices":
+            name = settings.get("lastSchema")
         if not name:
             return
-        dest = SCHEMAS_DIR / name
+
+        kind_dir = config.get_schemas_dir(self._schema_kind_key())
+        dest = kind_dir / name
+        if not dest.exists() and self._schema_kind_key() == "invoices":
+            # Back-compat: allow schemas stored directly under config/schemas/
+            legacy = config.SCHEMAS_DIR / name
+            if legacy.exists():
+                dest = legacy
         if not dest.exists():
             return
         try:
-            self._last_imported_schema_name = name
+            self._last_imported_schema_name = str(name)
             self._load_schema_from_path(dest)
         except Exception:
             pass
+
+    def _on_schema_kind_change(self, value: str):
+        # Clear current schema view and reload the last schema for the chosen kind.
+        self._field_paths = []
+        self._array_paths = []
+        self._last_imported_schema_name = None
+        self.schema_path_label.configure(text="No schema loaded", text_color="gray")
+        self._refresh_expand_combo()
+        self._load_last_schema_if_saved()
 
     def _import_schema(self):
         path = filedialog.askopenfilename(
@@ -341,13 +388,18 @@ class LayoutsFrame(ctk.CTkFrame):
             return
         try:
             self._load_schema_from_path(path)
-            # Save copy to config/schemas/ (overwrites if same name) and remember for reimport
+            # Save copy to config/schemas/<kind>/ (overwrites if same name) and remember for reimport
             import shutil
             name = Path(path).name
-            dest = SCHEMAS_DIR / name
+            dest = config.get_schemas_dir(self._schema_kind_key()) / name
             shutil.copy(path, dest)
             self._last_imported_schema_name = name
-            save_settings({**load_settings(), "lastSchema": name})
+            settings = load_settings()
+            settings[self._last_schema_setting_key()] = name
+            # Back-compat key (invoice-only)
+            if self._schema_kind_key() == "invoices":
+                settings["lastSchema"] = name
+            save_settings(settings)
         except Exception as e:
             messagebox.showerror("Import error", str(e))
 
@@ -357,7 +409,13 @@ class LayoutsFrame(ctk.CTkFrame):
         data = schemas.load_schema_file(path)
         self._field_paths = schemas.extract_field_paths_from_schema(data)
         self._array_paths = schemas.extract_array_paths_from_schema(data)
-        self.schema_path_label.configure(text=f"Loaded {len(self._field_paths)} paths from {path.name}")
+        if self._schema_kind_key() == "billables":
+            kind_label = "Billables"
+        elif self._schema_kind_key() == "tickets":
+            kind_label = "Tickets"
+        else:
+            kind_label = "Invoices"
+        self.schema_path_label.configure(text=f"{kind_label}: loaded {len(self._field_paths)} paths from {path.name}")
         self._refresh_expand_combo()
 
     def _add_field_column(self):
@@ -730,7 +788,21 @@ class ExportFrame(ctk.CTkFrame):
         self._build_ui()
 
     def _build_ui(self):
-        ctk.CTkLabel(self, text="Query & export invoices", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.pack(fill="x", padx=10, pady=(10, 4))
+        self._title_label = ctk.CTkLabel(header, text="Query & export", font=ctk.CTkFont(size=14, weight="bold"))
+        self._title_label.pack(side="left")
+
+        type_row = ctk.CTkFrame(self, fg_color="transparent")
+        type_row.pack(fill="x", padx=10, pady=(0, 4))
+        ctk.CTkLabel(type_row, text="Data", width=100).pack(side="left", padx=(0, 8))
+        self.data_kind = ctk.CTkSegmentedButton(
+            type_row,
+            values=["Invoices", "Billables", "Tickets"],
+            command=self._on_data_kind_change,
+        )
+        self.data_kind.pack(side="left", padx=(0, 8))
+        self.data_kind.set("Invoices")
 
         # Date filter: either date option or custom range (mutually exclusive)
         date_section = ctk.CTkFrame(self, fg_color="transparent")
@@ -882,6 +954,18 @@ class ExportFrame(ctk.CTkFrame):
         self.log_text.insert("end", msg + "\n")
         self.log_text.see("end")
 
+    def _data_kind_key(self) -> str:
+        v = (self.data_kind.get() or "Invoices").strip().lower()
+        if v.startswith("bill"):
+            return "billables"
+        if v.startswith("tick"):
+            return "tickets"
+        return "invoices"
+
+    def _on_data_kind_change(self, value: str):
+        # Keep UI minimal: only adjust log phrasing and defaults.
+        self._log(f"Selected: {value}")
+
     def _run_export(self, fmt: str):
         layout_name = self.layout_combo.get()
         if not layout_name or layout_name.startswith("("):
@@ -903,24 +987,58 @@ class ExportFrame(ctk.CTkFrame):
             if not start_date or not end_date:
                 messagebox.showwarning("Date range", "Enter both Start and End date (ISO-8601, e.g. 2024-01-01T00:00:00Z).")
                 return
-            self._log(f"Fetching invoices (startDate={start_date}, endDate={end_date})...")
+            if self._data_kind_key() == "billables":
+                noun = "billables"
+            elif self._data_kind_key() == "tickets":
+                noun = "tickets"
+            else:
+                noun = "invoices"
+            self._log(f"Fetching {noun} (startDate={start_date}, endDate={end_date})...")
         else:
             date_option = self.date_combo.get()
-            self._log(f"Fetching invoices (dateOption={date_option})...")
+            if self._data_kind_key() == "billables":
+                noun = "billables"
+            elif self._data_kind_key() == "tickets":
+                noun = "tickets"
+            else:
+                noun = "invoices"
+            self._log(f"Fetching {noun} (dateOption={date_option})...")
         self.update_idletasks()
         try:
-            items = api.fetch_all_invoice_items(
-                date_option=date_option,
-                filtered_fields=True,
-                start_date=start_date,
-                end_date=end_date,
-            )
-            self._log(f"Fetched {len(items)} invoice(s).")
+            if self._data_kind_key() == "billables":
+                items = api.fetch_all_billable_items(
+                    date_option=date_option,
+                    filtered_fields=True,
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+                self._log(f"Fetched {len(items)} billable(s).")
+            elif self._data_kind_key() == "tickets":
+                items = api.fetch_all_ticket_items(
+                    date_field="modifyDate",
+                    date_option=date_option,
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+                self._log(f"Fetched {len(items)} ticket(s).")
+            else:
+                items = api.fetch_all_invoice_items(
+                    date_option=date_option,
+                    filtered_fields=True,
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+                self._log(f"Fetched {len(items)} invoice(s).")
             if not items:
                 self._log("No data to export.")
-                messagebox.showinfo("Export", "No invoices to export.")
+                messagebox.showinfo(
+                    "Export",
+                    "No billables to export."
+                    if self._data_kind_key() == "billables"
+                    else ("No tickets to export." if self._data_kind_key() == "tickets" else "No invoices to export."),
+                )
                 return
-            default_name = export.default_export_filename(fmt)
+            default_name = export.default_export_filename_for(self._data_kind_key(), fmt)
             path = filedialog.asksaveasfilename(
                 title=f"Save as {fmt.upper()}",
                 defaultextension=f".{fmt}",
@@ -932,7 +1050,18 @@ class ExportFrame(ctk.CTkFrame):
             if fmt == "csv":
                 export.export_to_csv(items, columns, path, expand_array_path=expand_array_path, layout_options=layout_full)
             else:
-                export.export_to_xlsx(items, columns, path, expand_array_path=expand_array_path, layout_options=layout_full)
+                export.export_to_xlsx(
+                    items,
+                    columns,
+                    path,
+                    expand_array_path=expand_array_path,
+                    layout_options=layout_full,
+                    sheet_title=(
+                        "Billables"
+                        if self._data_kind_key() == "billables"
+                        else ("Tickets" if self._data_kind_key() == "tickets" else "Invoices")
+                    ),
+                )
             num_rows = len(layouts.rows_from_items(items, columns, expand_array_path, layout_options=layout_full))
             self._log(f"Exported to {path}")
             messagebox.showinfo("Export", f"Exported {num_rows} row(s) to {path}")

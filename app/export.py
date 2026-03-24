@@ -44,6 +44,7 @@ def export_to_xlsx(
     filepath: str | Path,
     expand_array_path: str | None = None,
     layout_options: dict | None = None,
+    sheet_title: str = "Invoices",
 ) -> None:
     """Write items to XLSX. If expand_array_path is set, one row per array element with parent fields repeated (same headers)."""
     try:
@@ -58,7 +59,10 @@ def export_to_xlsx(
     ws = wb.active
     if ws is None:
         raise RuntimeError("Failed to create worksheet")
-    ws.title = "Invoices"
+    try:
+        ws.title = (sheet_title or "Sheet1")[:31]
+    except Exception:
+        ws.title = "Sheet1"
 
     for col, h in enumerate(headers, 1):
         ws.cell(row=1, column=col, value=h)
@@ -72,4 +76,10 @@ def export_to_xlsx(
 
 def default_export_filename(extension: str) -> str:
     """e.g. invoices_20240209_143022.csv"""
-    return f"invoices_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{extension}"
+    return default_export_filename_for("invoices", extension)
+
+
+def default_export_filename_for(prefix: str, extension: str) -> str:
+    """e.g. billables_20240209_143022.csv"""
+    safe_prefix = (prefix or "export").strip().lower().replace(" ", "_") or "export"
+    return f"{safe_prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{extension}"

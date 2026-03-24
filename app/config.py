@@ -25,6 +25,9 @@ CREDENTIALS_FILE = CONFIG_DIR / "credentials.dat"
 SETTINGS_FILE = CONFIG_DIR / "settings.json"
 LAYOUTS_DIR = CONFIG_DIR / "layouts"
 SCHEMAS_DIR = CONFIG_DIR / "schemas"
+SCHEMAS_INVOICES_DIR = SCHEMAS_DIR / "invoices"
+SCHEMAS_BILLABLES_DIR = SCHEMAS_DIR / "billables"
+SCHEMAS_TICKETS_DIR = SCHEMAS_DIR / "tickets"
 
 # Salt for key derivation (static per app; real secrecy is encryption + not storing plaintext)
 _SALT = b"CommandAlkonInvoiceExport_v1"
@@ -44,6 +47,23 @@ def ensure_dirs():
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     LAYOUTS_DIR.mkdir(parents=True, exist_ok=True)
     SCHEMAS_DIR.mkdir(parents=True, exist_ok=True)
+    SCHEMAS_INVOICES_DIR.mkdir(parents=True, exist_ok=True)
+    SCHEMAS_BILLABLES_DIR.mkdir(parents=True, exist_ok=True)
+    SCHEMAS_TICKETS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def get_schemas_dir(kind: str | None = None) -> Path:
+    """Return the schema cache directory for a data kind.
+
+    kind: 'invoices' | 'billables' | 'tickets' (case-insensitive). Defaults to invoices.
+    """
+    ensure_dirs()
+    k = (kind or "invoices").strip().lower()
+    if k in ("billable", "billables"):
+        return SCHEMAS_BILLABLES_DIR
+    if k in ("ticket", "tickets"):
+        return SCHEMAS_TICKETS_DIR
+    return SCHEMAS_INVOICES_DIR
 
 def save_credentials(data: dict) -> None:
     """Save credentials encrypted. data: entityRef, apiKey, clientId, clientSecret, apiScopeRef."""
