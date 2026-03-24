@@ -10,6 +10,9 @@ from typing import Any
 def _collect_paths(obj: Any, prefix: str = "") -> list[str]:
     """Recursively collect dot-separated paths (e.g. paymentTerms.id). For arrays, uses first element."""
     out: list[str] = []
+    # For arrays of objects, the first element can be sparse (optional fields).
+    # Sample a few elements to union keys and make more fields selectable.
+    ARRAY_SAMPLE_SIZE = 3
     if obj is None:
         if prefix:
             out.append(prefix)
@@ -20,20 +23,21 @@ def _collect_paths(obj: Any, prefix: str = "") -> list[str]:
             if isinstance(v, dict):
                 out.extend(_collect_paths(v, key))
             elif isinstance(v, list) and v:
-                first = v[0]
-                if isinstance(first, (dict, list)):
-                    out.extend(_collect_paths(first, key))  # e.g. contacts.email from first
-                else:
-                    out.append(key)
+                # Union paths across a few elements to capture optional keys.
+                for el in v[:ARRAY_SAMPLE_SIZE]:
+                    if isinstance(el, (dict, list)):
+                        out.extend(_collect_paths(el, key))  # e.g. contacts.email
+                    else:
+                        out.append(key)
             else:
                 out.append(key)
         return out
     if isinstance(obj, list) and obj:
-        first = obj[0]
-        if isinstance(first, (dict, list)):
-            out.extend(_collect_paths(first, prefix))
-        elif prefix:
-            out.append(prefix)
+        for el in obj[:ARRAY_SAMPLE_SIZE]:
+            if isinstance(el, (dict, list)):
+                out.extend(_collect_paths(el, prefix))
+            elif prefix:
+                out.append(prefix)
         return out
     if prefix:
         out.append(prefix)
